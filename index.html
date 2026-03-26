@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+   
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Super Mario Sep by Andrei/IJI</title>
+    <style>
+        html,
+body {
+  font-family: "Arcade Interlaced";
+  margin: 0;
+  padding: 0;
+
+  width: 100vw;
+  height: 100dvh; 
+
+  overflow: hidden;
+
+  background-color: rgb(0, 0, 1);
+
+  display: block;
+}
+main{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+        canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  image-rendering: pixelated;
+  background: black;
+  z-index: 1;
+}
+#menuBtn {
+  position: fixed;
+  top: 15px;
+  left: 15px;
+  z-index: 1000;
+  background: rgba(0,0,0,0.8);
+  color: #40ff00;
+  border: 2px solid #40ff00;
+  font-size: 20px;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+          img{
+            display: none;
+          }
+          .arcade{
+            rotate: 0.5deg;
+            position: relative;
+            display:none;
+          }
+          .forms{
+            
+            font-family: Arial, Helvetica, sans-serif;
+          }
+          .forms select, .forms button{
+            display: none;
+          }
+
+          /* Onscreen Controls Settings Panel */
+         .onscreen-controls-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background-color: rgba(0,0,0,0.9);
+            border: 2px solid rgb(64, 255, 0);
+            border-radius: 5px;
+            padding: 15px;
+            z-index: 3000;
+            min-width: 300px;
+            font-family: Arial, Helvetica, sans-serif;
+            color: rgb(64, 255, 0);
+            opacity: 0;
+            pointer-events: none; /* prevent clicks when hidden */
+            transition: all 0.2s ease;
+        }
+
+        .onscreen-controls-panel.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            pointer-events: auto; /* enable clicks when shown */
+        }
+
+          .onscreen-controls-panel h3 {
+            margin: 0 0 15px 0;
+            font-size: 14px;
+            text-align: center;
+            border-bottom: 1px solid rgb(64, 255, 0);
+            padding-bottom: 10px;
+          }
+
+          .slider-group {
+            margin-bottom: 15px;
+          }
+
+          .slider-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+            font-size: 12px;
+          }
+
+          .slider-label-text {
+            flex: 1;
+          }
+
+          .slider-value {
+            margin-left: 10px;
+            font-weight: bold;
+            min-width: 40px;
+            text-align: right;
+          }
+
+          .slider-input {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: linear-gradient(to right, rgb(100, 100, 100), rgb(64, 255, 0));
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+          }
+
+          .slider-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgb(64, 255, 0);
+            cursor: pointer;
+            border: 2px solid black;
+          }
+
+          .slider-input::-moz-range-thumb {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: rgb(64, 255, 0);
+            cursor: pointer;
+            border: 2px solid black;
+          }
+
+          .moveLists {
+            top: 65%;
+           
+            display: none;
+            flex-wrap: wrap;           /* allow items to wrap to new rows */
+            position: fixed;
+            left: 2.5vw;
+            z-index: 130;
+            width: 70vw;              /* 3 items × (100px + 2×10px margin) = ~360px */
+            /* adjust width as needed */
+}
+
+.moveListsP2 {
+            top: 30vh;
+            display: none;
+            flex-wrap: wrap;           /* allow items to wrap to new rows */
+            position: fixed;
+            left: 8vw;
+           
+            z-index: 130;
+            width: 480px;              /* 3 items × (100px + 2×10px margin) = ~360px */
+            /* adjust width as needed */
+}
+          .move{
+            position: fixed; /* 🔥 key fix */
+             width: 50px;
+            height: 50px;
+
+            border-radius: 50%;
+            border: 2px solid black;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 12px;
+            background-size: cover;
+            background-position: center;
+
+            transform: translate(-50%, -50%); /* 🔥 cursor center fix */
+            touch-action: none; /* 🔥 prevent mobile offset */
+            
+            
+            background-image: url("./images/joystick/blue.png");
+  background-size: cover;     /* Makes the image cover the div */
+  background-position: center; /* Centers the image */
+          }
+          
+          .move.clicked{
+             background-image: url("./images/joystick/red.png");
+  background-size: cover;     /* Makes the image cover the div */
+  background-position: center; /* Centers the image */
+            transform: scale(1.2);
+            background-color: red;
+          }
+
+          .move1{
+          position: fixed; /* 🔥 key fix */
+           width: 50px;
+            height: 50px;
+            font-size: 12px;
+          border-radius: 50%;
+          border: 2px solid black;
+
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          font-family: Arial, Helvetica, sans-serif;
+
+          background-size: cover;
+          background-position: center;
+
+          transform: translate(-50%, -50%); /* 🔥 cursor center fix */
+          touch-action: none; /* 🔥 prevent mobile offset */
+            
+           
+
+             background-image: url("./images/joystick/white.png");
+  background-size: cover;     /* Makes the image cover the div */
+  background-position: center; /* Centers the image */
+          }
+
+          #start1, #select1{
+            background-image: url("./images/joystick/blue.png");
+  background-size: cover;     /* Makes the image cover the div */
+  background-position: center; /* Centers the image */
+          }
+          
+
+          .move1.clicked, #start1.clicked, #select1.clicked{
+            background-image: url("./images/joystick/red.png");
+  background-size: cover;     /* Makes the image cover the div */
+  background-position: center; /* Centers the image */
+            transform: scale(1.2);
+            background-color: red;
+          }
+
+          .move2{
+            position: fixed; /* 🔥 key fix */
+            width: 50px;
+            height: 50px;
+            font-size: 12px;
+            border-radius: 50%;
+            border: 2px solid black;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            font-family: Arial, Helvetica, sans-serif;
+
+            background-size: cover;
+            background-position: center;
+
+            transform: translate(-50%, -50%); /* 🔥 cursor center fix */
+            touch-action: none; /* 🔥 prevent mobile offset */
+            background-image: url("./images/joystick/white.png");
+  background-size: cover;     /* Makes the image cover the div */
+  background-position: center; /* Centers the image */
+          }
+          .move2:hover{
+            transform: scale(1.2);
+            background-color: red;
+          }
+
+          .move2.clicked{
+            background-image: url("./images/joystick/red.png");
+  background-size: cover;     /* Makes the image cover the div */
+  background-position: center; /* Centers the image */
+            transform: scale(1.2);
+            background-color: red;
+          }
+
+          .movePlayer{
+            opacity: 20%;
+           display: none;
+            font-family: Arial, Helvetica, sans-serif;
+            width: 100px;
+            margin: 10px;
+            border-radius: 100%;
+            border: 2px solid black;
+            height: 100px;
+            align-content: center;
+            justify-content: center;
+            text-align: center;
+            justify-items: center;
+            align-items: center;
+            background-color: White;
+            transition: all 0.1s ease-in-out;
+          }
+          .movePlayer input[type="checkbox"] {
+            accent-color: #007bff;
+           width: 30%;
+           border-radius: 20px;
+           height: 30%;
+          }
+          .movePlayer:hover{
+            transform: scale(1.2);
+            background-color: red;
+          }
+          .moveTitle{
+            position: absolute;
+            left: 5%;
+            font-size: 3vw;
+            color: White;
+            font-weight: bold;
+            font-family: Arial, Helvetica, sans-serif;
+            top: -5vh;
+          }
+
+        
+
+          .move.disabled, .move2.disabled, .move1.disabled, #joystick.disabled {
+        pointer-events: none;   /* prevent clicks/taps */
+        opacity: 0.4;           /* faded out look */
+        cursor: not-allowed;    /* optional, shows user can't click */
+    }
+
+
+/* ===== MENU BUTTON ===== */
+#menuBtn {
+  position: fixed;
+  top: 15px;
+  left: auto;
+  right: 15px;
+  z-index: 2000;
+  
+  color: #40ff00;
+  border: 2px solid #40ff00;
+  padding: 10px 14px;
+  font-size: 18px;
+  cursor: pointer;
+  border-radius: 6px;
+  box-shadow: 0 0 10px #40ff00;
+}
+
+#menuBtn:hover {
+  background: #40ff00;
+  color: black;
+}
+
+/* ===== SIDE MENU ===== */
+#emulatorMenu {
+  position: fixed;
+  top: 0;
+  right: -320px;
+  width: 300px;
+  height: 100vh;
+
+  color: #40ff00;
+  z-index: 1500;
+  padding: 15px;
+  transition: 0.3s;
+}
+
+#emulatorMenu.open {
+  right: 0;
+  background: rgba(0,0,0,0.95);
+}
+
+.tabBtn {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0;
+  background: black;
+  color: #40ff00;
+  border: 1px solid #40ff00;
+  cursor: pointer;
+}
+
+.tabBtn:hover {
+  background: #40ff00;
+  color: black;
+}
+
+.tabContent {
+  display: none;
+}
+
+.tabContent.active {
+  display: block;
+}
+
+  #joystick {
+  
+  width: 16vh;  
+  height: 16vh;
+
+  background: rgba(255,255,255,0.2);
+  border: 2px solid white;
+  border-radius: 50%;
+  opacity: 20%;
+  position: fixed;
+  bottom: 25vh;
+  left: 15vw;
+  z-index: 200;
+  touch-action: none;
+  background-image: url("./images/joystick/placer.png");
+  background-size: cover;     /* Makes the image cover the div */
+  background-position: center; /* Centers the image */
+  
+}
+
+
+#knob {
+  content: url('./images/joystick/handle.png');
+  width: 100%;   
+  height: 100%;
+  background: yellow;
+  border: 2px solid black;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 205;
+}
+
+.screenJoystick{
+  position: fixed;
+ z-index: 105;
+ top: 20vh;
+ left: 1vw;
+ font-family: Arial, Helvetica, sans-serif;
+ color: rgb(64, 255, 0);
+}
+
+.screenJoystickP2{
+  position: fixed;
+  display: none;
+ z-index: 105;
+ top: 20vh;
+ right: 1vw;
+ font-family: Arial, Helvetica, sans-serif;
+ color: rgb(64, 255, 0);
+}
+
+.screenJoystickController{
+  position: fixed;
+ z-index: 105;
+ display: none;
+top: 40vh;
+ left: 1vw;
+ font-family: Arial, Helvetica, sans-serif;
+ font-size: small;
+ color: rgb(64, 255, 0);
+}
+
+
+.move.active {
+  background-color: red !important;
+}
+
+    </style>
+    
+<button id="menuBtn">☰</button>
+<button id="saveLayoutBtn" style="
+    display:none;
+    position:fixed;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:4000;
+    padding:10px 20px;
+    font-size:16px;
+    background-color:#40ff00;
+    color:black;
+    border:2px solid #40ff00;
+    border-radius:6px;
+    cursor:pointer;
+    box-shadow:0 0 10px #40ff00;
+">💾 Save Layout</button>
+<button id="restoreLayoutBtn"  style="
+    display:none;
+    position:fixed;
+    top:15px;
+    left:50%;
+    transform:translateX(-50%);
+    z-index:4000;
+    padding:10px 20px;
+    font-size:16px;
+    background-color:#40ff00;
+    color:black;
+    border:2px solid #40ff00;
+    border-radius:6px;
+    cursor:pointer;
+    box-shadow:0 0 10px #40ff00;
+">♻️ Restore Default</button>
+    <div id="emulatorMenu">
+      
+  <h3 style="text-align: center;">GAME MENU</h3>
+
+  <button class="tabBtn" data-tab="p1">Show Player 1 Control</button>
+  <button class="tabBtn" data-tab="p2">Show Player 2 Control</button>
+  <button class="tabBtn" data-tab="settings">Settings</button>
+  <button id="reloadBtn" class="tabBtn">Restart Game</button>
+  <button class="tabBtn" data-tab="multiplayer">Multiplayer</button>
+
+
+</div>
+<div id="multiplayerPanel" style="
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(0,0,0,0.9);
+    border: 2px solid #40ff00;
+    border-radius: 6px;
+    padding: 20px;
+    width: 300px;
+    z-index: 3000;
+    color: #40ff00;
+    text-align: center;
+    font-family: Arial, Helvetica, sans-serif;
+">
+  <h4 style="margin-bottom:10px;">Multiplayer</h4>
+  <label style="display:block; margin-bottom:10px;">
+    Peer IP/Tailscale IP:
+    <input type="text" id="peerIp" placeholder="ws://192.168.1.5:8080" style="width: 100%; margin-top:5px; padding:5px; border-radius:4px; border:1px solid #40ff00; background:black; color:#40ff00;">
+  </label>
+  <button id="connectPeerBtn" style="
+      width: 100%;
+      padding: 8px;
+      background-color: #40ff00;
+      color: black;
+      border: 2px solid #40ff00;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+  ">Connect</button>
+  <div id="peerStatus" style="margin-top:10px; font-size:12px;">Not connected</div>
+  <button id="closeMultiplayerBtn" style="
+      margin-top:15px;
+      width: 100%;
+      padding: 6px;
+      background-color: black;
+      color: #40ff00;
+      border: 2px solid #40ff00;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 12px;
+  ">Close</button>
+</div>
+<div id="notice" style="
+     display:none;
+     background:#020fff;
+     color:white;
+     padding:12px;
+     font-family: 'Courier New', Courier, monospace;
+     position:fixed;
+     z-index: 1005;
+     top:20px; left:20px;
+     border-radius:6px;">
+</div>
+    
+        <script defer type="module"src="./src/index.js"></script>
+  </head>
+  <body>
+    <main>
+      <div id="gameWrapper">
+      <canvas width="384" height="224"></canvas>
+      </div>
+    <img src="./arcade.png" alt="arcade" class="arcade"/>
+  </main>
+ 
+<div id="joystick" style="display: none;">
+  <div id="knob"></div>
+</div>
+  
+  <div class="scrninput">
+  <div class="moveLists">
+      <div class="moveTitle"> </div>
+      <div class="movePlayer">
+          <input id="ken" type="checkbox" name="fighter" value="Ken"/>
+          <lagel for="ken">P1</lagel>
+        </div>
+        <div class="movePlayer">
+          <input id="malupiton" type="checkbox" name="fighter" value="Malupiton"/>
+          <lagel for="malupiton">P1</lagel>
+          
+        </div>
+        <div class="move1"  id="start1">Start</div>
+        <div class="move1"  id="select1">Select</div>
+          <div class="move" style="display: none;"  id="jump">Up</div>
+    <div class="move" style="display: none;"  id="mFor">Right</div>
+    <div class="move" style="display: none;" id="mBack">Left</div>
+    <div class="move" style="display: none;" id="crouchDown">Down</div>
+       
+    <div class="movebtnsP1">   <div class="move1" id="AP1">A</div>
+    <div class="move1"  id="BP1">B</div>
+    <div class="move1" id="CP1">C</div>
+    <div class="move1" id="DP1">D</div>
+    
+  </div>
+
+  </div>
+
+  <div class="moveListsP2">
+    <div class="moveTitle"> Player 2 Test Control</div>
+    <div class="movePlayer">
+        <input id="ken" type="checkbox" name="fighter" value="Ken"/>
+        <lagel for="ken">P1</lagel>
+      </div>
+      <div class="movePlayer">
+        <input id="malupiton" type="checkbox" name="fighter" value="Malupiton"/>
+        <lagel for="malupiton">P2</lagel>
+      </div>
+    <!-- Player 2 Directional Buttons -->
+
+<div id="p2Controls" style="
+    position: fixed;
+    bottom: 10vh;   /* distance from bottom of screen */
+    left: 5vw;      /* distance from left of screen */
+    width: 150px;   /* container width */
+    height: 150px;  /* container height */
+    pointer-events: all;
+">
+    <div class="move" id="jumpP2" style="position: absolute; top: 0; left: 33%; transform: translateX(-50%);">Up</div>
+    <div class="move" id="mForP2" style="position: absolute; top: 33%; right: 0; transform: translateY(-50%);">Right</div>
+    <div class="move" id="mBackP2" style="position: absolute; top: 33%; left: 0; transform: translateY(-50%);">Left</div>
+    <div class="move" id="crouchDownP2" style="position: absolute; bottom: 0; left: 33%; transform: translateX(-50%);">Down</div>
+</div>
+<div class="movebtnsP1">   <div class="move2"  id="AP2">A</div>
+  <div class="move2" id="BP2">B</div>
+  <div class="move2"  id="CP2">C</div>
+  <div class="move2" id="DP2">D</div>
+ <div class="move2" style="top:160px;left: 27%; " id="start2">Start</div>
+  <div class="move2"  style="top:160px;left: 27%; " id="select2">Select</div></div>
+
+  </div>
+  <form class="forms">
+      <select id="state-dropdown"name="state"></select>
+      <button type="submit" >Transition!</button>
+    </form>
+
+    <!-- Onscreen Controls Settings Panel -->
+    <div class="onscreen-controls-panel">
+      <h3>ONSCREEN CONTROLS</h3>
+      
+      <div class="slider-group">
+        <div class="slider-label">
+          <span class="slider-label-text">TRANSPARENCY:</span>
+          <span class="slider-value" id="transparency-value">20%</span>
+        </div>
+        <input 
+          type="range" 
+          id="button-transparency-slider" 
+          class="slider-input"
+          min="0" 
+          max="100" 
+          value="20"
+          step="5"
+        />
+      </div>
+
+      <div class="slider-group">
+        <div class="slider-label">
+          <span class="slider-label-text">BUTTON SIZE:</span>
+          <span class="slider-value" id="size-value">100%</span>
+        </div>
+        <input 
+          type="range" 
+          id="button-size-slider" 
+          class="slider-input"
+          min="50" 
+          max="200" 
+          value="100"
+          step="10"
+        />
+      </div>
+      
+ <button id="editLayoutBtn" style="
+    display:block;
+  
+    padding:10px 20px;
+    font-size:16px;
+    background-color:#40ff00;
+    color:black;
+    border:2px solid #40ff00;
+    border-radius:6px;
+    cursor:pointer;
+    box-shadow:0 0 10px #40ff00;
+">Edit Layout</button>
+
+    </div>
+    </div>
+
+    <script>
+      const multiplayerPanel = document.getElementById('multiplayerPanel');
+const closeMultiplayerBtn = document.getElementById('closeMultiplayerBtn');
+
+// Show panel when clicking multiplayer button
+document.querySelector('.tabBtn[data-tab="multiplayer"]').addEventListener('click', () => {
+  multiplayerPanel.style.display = 'block';
+});
+
+// Close button
+closeMultiplayerBtn.addEventListener('click', () => {
+  multiplayerPanel.style.display = 'none';
+});
+     
+const menuBtn = document.getElementById("menuBtn");
+const menu = document.getElementById("emulatorMenu");
+
+menuBtn.onclick = () => {
+  menu.classList.toggle("open");
+};
+
+const p1Controls = document.querySelector(".moveLists");
+const p2Controls = document.querySelector(".moveListsP2");
+const controlPanel = document.querySelector(".onscreen-controls-panel");
+const joystick = document.getElementById("joystick");
+
+let activeTab = null;
+let settingsOpen = false;
+
+// Toggle side menu
+menuBtn.onclick = (e) => {
+  e.stopPropagation(); 
+  menu.classList.toggle("open");
+};
+
+// Tab buttons
+document.querySelectorAll(".tabBtn").forEach(btn => {
+  
+  btn.onclick = (e) => {
+    e.stopPropagation(); 
+    const tab = btn.dataset.tab;
+
+    if (tab === "settings") {
+      settingsOpen = !settingsOpen;
+      if (settingsOpen) controlPanel.classList.add("show");
+      else controlPanel.classList.remove("show");
+      return;
+    }
+
+    if (activeTab === tab) {
+  p1Controls.style.display = "none";
+  p2Controls.style.display = "none";
+  joystick.style.display = "none";
+
+  // Reset button text
+  if (tab === "p1") btn.textContent = "Show Player 1 Control";
+  if (tab === "p2") btn.textContent = "Show Player 2 Control";
+
+  activeTab = null;
+  return;
+}
+
+    activeTab = tab;
+
+    p1Controls.style.display = "none";
+    p2Controls.style.display = "none";
+    joystick.style.display = "none";
+
+    if (tab === "p1") {
+      p1Controls.style.display = "flex";
+       btn.textContent = "Hide Player 1 Control";
+      joystick.style.display = "block";
+    }
+
+    if (tab === "p2") {
+       btn.textContent = "Hide Player 2 Control";
+      p2Controls.style.display = "flex";
+    }
+  };
+});
+
+
+document.addEventListener("click", (e) => {
+
+  if (!menu.contains(e.target) && !menuBtn.contains(e.target)) {
+    menu.classList.remove("open");
+  }
+
+  if (!controlPanel.contains(e.target)) {
+    controlPanel.classList.remove("show");
+    settingsOpen = false;
+  }
+});
+
+document.getElementById('editLayoutBtn').addEventListener('click', () => {
+  if (!layoutEditMode) {
+    enableLayoutEdit();
+   
+  } else {
+    disableLayoutEdit();
+   
+  }
+});
+
+
+</script>
+<script src="/socket.io/socket.io.js"></script>
+ <script type="module">
+  console.log("connection")
+  import { connect } from './src/socket.js';
+
+  const connectBtn = document.getElementById('connectPeerBtn');
+  const peerInput = document.getElementById('peerIp');
+  const peerStatus = document.getElementById('peerStatus');
+
+  connectBtn.addEventListener('click', () => {
+    const ip = peerInput.value.trim();
+    if (!ip) return;
+
+    try {
+      connect(ip);
+      peerStatus.textContent = 'Connecting...';
+      setTimeout(() => {
+        peerStatus.textContent = 'Connected!';
+      }, 500); // optimistic, will update on real connection
+    } catch (err) {
+      console.error(err);
+      peerStatus.textContent = 'Failed to connect';
+    }
+  });
+</script>
+   
+    <img src="./images/mario.png" alt="mario"/>
+    <img src="./images/level1.png" alt="level1"/>
+ 
+    <audio 
+    id="music-ground" 
+    src="./sounds/groundThemeBG.mp3" 
+    preload="auto" 
+    ></audio> 
+
+
+  </body>
+
+
+</html>
+

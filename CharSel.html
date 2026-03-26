@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Character Select</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: 'Courier New', monospace;
+      text-align: center;
+    }
+
+    canvas {
+      display: block;
+      margin: 20px auto;
+      background: #111;
+      border: 3px solid gold;
+    }
+
+    #charName {
+      font-size: 24px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="charSelect" width="400" height="300"></canvas>
+  <div id="charName">Select Your Fighter!</div>
+  
+  <script>
+const canvas = document.getElementById('charSelect');
+const ctx = canvas.getContext('2d');
+const charNameEl = document.getElementById('charName');
+
+// Character data
+const characters = [
+  { name: "Ryu", color: "red" },
+  { name: "Ken", color: "orange" },
+  { name: "Chun-Li", color: "blue" },
+  { name: "Guile", color: "green" },
+  { name: "Blanka", color: "lime" },
+  { name: "Zangief", color: "brown" },
+];
+
+// Layout config
+const cols = 3; // 3 characters per row
+const boxSize = 100;
+const padding = 10;
+let cursorIndex = 0;
+
+function drawCharacters() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  characters.forEach((char, index) => {
+    const col = index % cols;
+    const row = Math.floor(index / cols);
+
+    const x = col * (boxSize + padding);
+    const y = row * (boxSize + padding);
+
+    // Draw character block
+    ctx.fillStyle = char.color;
+    ctx.fillRect(x, y, boxSize, boxSize);
+
+    // Draw character name inside box
+    ctx.fillStyle = "white";
+    ctx.font = "12px Courier New";
+    ctx.fillText(char.name, x + 10, y + boxSize - 10);
+
+    // Draw yellow cursor if selected
+    if (index === cursorIndex) {
+      ctx.strokeStyle = "yellow";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(x, y, boxSize, boxSize);
+    }
+  });
+
+  // Update selected name
+  charNameEl.textContent = characters[cursorIndex].name;
+}
+
+function moveCursor(direction) {
+  const total = characters.length;
+
+  if (direction === 'left' && cursorIndex % cols !== 0) {
+    cursorIndex--;
+  } else if (direction === 'right' && (cursorIndex + 1) % cols !== 0 && cursorIndex + 1 < total) {
+    cursorIndex++;
+  } else if (direction === 'up' && cursorIndex - cols >= 0) {
+    cursorIndex -= cols;
+  } else if (direction === 'down' && cursorIndex + cols < total) {
+    cursorIndex += cols;
+  }
+
+  drawCharacters();
+}
+
+document.addEventListener('keydown', (e) => {
+  switch (e.key) {
+    case 'ArrowLeft': moveCursor('left'); break;
+    case 'ArrowRight': moveCursor('right'); break;
+    case 'ArrowUp': moveCursor('up'); break;
+    case 'ArrowDown': moveCursor('down'); break;
+    case 'Enter':
+      alert(`You selected ${characters[cursorIndex].name}`);
+      break;
+  }
+});
+drawCharacters(); // Draw initial screen
+
+  </script>
+</body>
+</html>
