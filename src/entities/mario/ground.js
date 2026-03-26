@@ -14,7 +14,7 @@ export class Ground {
 
         // Simple brick frame (adjust to your sprite sheet)
         this.frames = new Map([
-            ['brick', [[16, 150, 16, 16]]], // CHANGE coords if needed
+            ['brick', [[0, 0, 0, 0]]], // CHANGE coords if needed
         ]);
 
         this.currentAnimationKey = 'brick';

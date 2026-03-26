@@ -3,6 +3,7 @@ import { Brick } from '../entities/mario/brick.js';
 import { Ground } from '../entities/mario/ground.js';
 import { KapNino } from '../entities/mario/KapNino.js';
 import { Mario } from '../entities/mario/Mario.js';
+import { SecretBlock } from '../entities/mario/secretBlock.js';
 import * as control from '../inputHandler.js';
 
 export class MarioScene {
@@ -21,12 +22,13 @@ export class MarioScene {
         ];
 
         this.bricks = [
-            new Brick(this, 120, 150),
-            new Brick(this, 160, 150),
-            new Brick(this, 30, 150),
-            new Brick(this, 60, 150),
+            new Brick(this, 326, 141),
+            new Brick(this, 160, 140),
+            new Brick(this, 30, 140),
+            new Brick(this, 60, 140),
+            new SecretBlock(this, 345,141),
             new Ground(this, 0, 208, 1100, 16),
-            new Ground(this, 200, 110, 16, 100)
+            new Ground(this, 442, 175, 34, 30)
         ];
 
         this.frames = new Map([['stage', [5, 0, 3584, 480]]]);
@@ -68,45 +70,41 @@ export class MarioScene {
     this.mario.onGround = false;
 
     const marioPush = this.mario.boxes.push;
-    const marioBox = this.getWorldBox(marioPush, this.mario);
+const marioHeadY = this.mario.position.y + marioPush.y;
 
-    for (const brick of this.bricks) {
-        const brickBox = brick.getWorldBox();
+for (const brick of this.bricks) {
+    const brickBox = brick.getWorldBox();
+    const brickBottomY = brickBox.y + brickBox.height;
+    const isHorizontallyOverlapping =
+        marioPush.x + marioPush.width > brickBox.x &&
+        marioPush.x < brickBox.x + brickBox.width;
 
-        // --- HEADBUTT (from below) ---
-        const marioHeadY = this.mario.position.y + marioPush.y;
-        const brickBottomY = brickBox.y + brickBox.height;
-        const isHorizontallyOverlapping =
-            marioBox.x + marioBox.width > brickBox.x &&
-            marioBox.x < brickBox.x + brickBox.width;
-
-        if (!brick.isBroken &&
-            this.mario.velocity.y < 0 &&
-            marioHeadY < brickBottomY &&
-            marioHeadY + marioPush.height > brickBox.y &&
-            isHorizontallyOverlapping
-        ) {
-            brick.break();
-            this.mario.velocity.y = 2; // bounce down
-        }
-
-        // --- LANDING (from above) ---
-        const marioFeetY = this.mario.position.y + marioPush.y + marioPush.height;
-        const brickTopY = brickBox.y;
-        const landingTolerance = 5;
-
-        if (!brick.isBroken &&
-            this.mario.velocity.y >= 0 &&
-            marioFeetY <= brickTopY + landingTolerance &&
-            marioFeetY + this.mario.velocity.y >= brickTopY - landingTolerance && // prevent falling through
-            isHorizontallyOverlapping
-        ) {
-            // Snap Mario to top of brick
-            this.mario.position.y = brickTopY - marioPush.height - marioPush.y;
-            this.mario.velocity.y = 0;
-            this.mario.onGround = true;
-        }
+    // HEADBUTT
+    if (this.mario.velocity.y < 0 &&
+        marioHeadY < brickBottomY &&
+        marioHeadY + marioPush.height > brickBox.y &&
+        isHorizontallyOverlapping
+    ) {
+        brick.break();       // safe call for all bricks now
+        this.mario.velocity.y = 2;
     }
+
+    // LANDING
+    const marioFeetY = this.mario.position.y + marioPush.y + marioPush.height;
+    const brickTopY = brickBox.y;
+    const landingTolerance = 5;
+
+    if ((brick.isSolid || typeof brick.isBroken !== 'undefined') &&
+        this.mario.velocity.y >= 0 &&
+        marioFeetY <= brickTopY + landingTolerance &&
+        marioFeetY + this.mario.velocity.y >= brickTopY - landingTolerance &&
+        isHorizontallyOverlapping
+    ) {
+        this.mario.position.y = brickTopY - marioPush.height - marioPush.y;
+        this.mario.velocity.y = 0;
+        this.mario.onGround = true;
+    }
+}
 }
 
     update(time) {

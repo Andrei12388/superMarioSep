@@ -260,7 +260,7 @@ for (const brick of this.game.bricks) {
 
     const tolerance = 5; // slightly bigger to prevent jitter
 
-    if(horizontallyOverlapping)console.log("Hori overlap")
+    
 
     // --- LANDING from above ---
     if (this.velocity.y >= 0 && marioFeetY >= brickTopY - tolerance && marioFeetY <= brickTopY + this.velocity.y && horizontallyOverlapping) {

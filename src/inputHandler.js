@@ -6,7 +6,6 @@ import { sendInput } from './socket.js';
 
 let audioCtx;
 let audioUnlocked = false;
-console.count('keydown');
 
 
 export function unlockAudio() {
@@ -79,7 +78,7 @@ function handleKeyDown(event) {
    const active = document.activeElement;
     if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA')) return;
   unlockAudio();
-  console.count('keydown');
+ 
   event.preventDefault();
   
   heldKeys.add(event.code);
