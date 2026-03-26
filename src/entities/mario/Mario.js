@@ -1,5 +1,6 @@
 import { FighterState, FrameDelay } from '../../constants/fighter.js';
 import * as control from '../../inputHandler.js';
+import { playSound } from '../../soundHandler.js';
 
 export class Mario {
     constructor(game) {
@@ -104,7 +105,7 @@ export class Mario {
     handleIdleState() {
         if (control.isHeavyKick(0) && this.onGround) { // <-- property
             this.velocity.y = -this.jumpForce;
-            this.soundJump.play()
+             playSound(this.soundJump, 1)
         } else if (control.isForward(0, 1)) {
             this.changeState(FighterState.WALK_FORWARD, 'walkSmall');
         } else if (control.isBackward(0, 1)) {
@@ -153,7 +154,7 @@ for (const brick of this.game.bricks) {
 
         if (!control.isForward(0, 1)) this.changeState(FighterState.IDLE, 'idleSmall');
         if (control.isHeavyKick(0) && this.onGround) {
-           this.soundJump.play()
+           playSound(this.soundJump, 1)
             this.velocity.y = -this.jumpForce;
         }
     }
@@ -195,7 +196,7 @@ for (const brick of this.game.bricks) {
 
         if (!control.isBackward(0, 1)) this.changeState(FighterState.IDLE, 'idleSmall');
         if (control.isHeavyKick(0) && this.onGround){
-            this.soundJump.play()
+            playSound(this.soundJump, 1)
             this.velocity.y = -this.jumpForce;
         } 
     }

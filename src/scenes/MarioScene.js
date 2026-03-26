@@ -162,7 +162,7 @@ for (const brick of this.bricks) {
     drawEntities(context) {
         for (const brick of this.bricks) {
             brick.draw(context, this.stage);
-            brick.drawDebug(context, this.stage);
+           // brick.drawDebug(context, this.stage);
         }
 
         for (const enemy of this.enemies) {
@@ -172,7 +172,7 @@ for (const brick of this.bricks) {
                 enemy.position.y - this.stage.y,
                 enemy.direction
             );
-            enemy.drawDebug(context, this.stage);
+           // enemy.drawDebug(context, this.stage);
         }
     }
 
@@ -190,6 +190,6 @@ for (const brick of this.bricks) {
             this.mario.position.y - this.stage.y,
             this.mario.direction
         );
-        this.mario.drawDebug(context, this.stage);
+      //  this.mario.drawDebug(context, this.stage);
     }
 }

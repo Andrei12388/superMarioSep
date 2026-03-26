@@ -1,10 +1,12 @@
 import { FighterState, FrameDelay } from '../../constants/fighter.js';
 import * as control from '../../inputHandler.js';
+import { playSound } from '../../soundHandler.js';
 
 export class KapNino {
     constructor(game, x, y) {
         this.game = game;
          this.soundDead = document.querySelector('audio#sound-stomp');
+         this.soundKapDead = document.querySelector('audio#sound-kapDead');
         // --- Constants & initial state ---
         this.ground = 207;
         this.maxSpeed = 1;
@@ -96,7 +98,10 @@ export class KapNino {
        // --- dead STATE ---
    handleDeadInit() {
     console.log("Dead enemy");
-    this.soundDead.play()
+   
+    playSound(this.soundDead, 1)
+    playSound(this.soundKapDead, 1)
+   
     this.currentAnimationKey = 'dead';
     this.deathTimer = 0;
 

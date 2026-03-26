@@ -1,3 +1,4 @@
+import { playSound } from '../../soundHandler.js';
 export class Brick {
     constructor(game, x, y) {
         this.game = game;
@@ -44,7 +45,8 @@ export class Brick {
 
         this.isBroken = true;
         this.breakTimer = 0;
-        this.soundBrick.play()
+        playSound(this.soundBrick, 1)
+       
         console.log("Brick broken!");
     }
 

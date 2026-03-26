@@ -1,9 +1,12 @@
+
+import { playSound } from '../../soundHandler.js';
 export class SecretBlock {
     constructor(game, x, y) {
         this.game = game;
         this.position = { x, y };
         this.image = document.querySelector('img[alt="mario"]');
         this.soundCoin = document.querySelector('audio#sound-coin');
+        this.soundBump = document.querySelector('audio#sound-bump');
 
         // Always solid
         this.isSolid = true;
@@ -42,9 +45,11 @@ export class SecretBlock {
 
     // Headbutt logic
     hit() {
-       
+       if(this.used) {
+        playSound(this.soundBump, 1)
+       }
         if (this.bouncing) return;
-
+        
         this.bouncing = true;
         this.bounceY = 0;
         this.bounceSpeed = -2;
@@ -61,7 +66,7 @@ export class SecretBlock {
     }
 
     spawnItem() {
-        this.soundCoin.play()
+        this.soundCoin.play();
         console.log("💡 Spawn item here!");
     }
 
