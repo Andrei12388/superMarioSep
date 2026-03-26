@@ -1,4 +1,5 @@
 import { playSound } from '../../soundHandler.js';
+import { BrickDebris } from './brokenDebris.js';
 export class Brick {
     constructor(game, x, y) {
         this.game = game;
@@ -40,15 +41,37 @@ export class Brick {
         };
     }
 
-    break() {
-        if (this.isBroken) return;
+  break() {
+    if (this.isBroken) return;
 
-        this.isBroken = true;
-        this.breakTimer = 0;
-        playSound(this.soundBrick, 1)
-       
-        console.log("Brick broken!");
-    }
+    this.isBroken = true;
+    playSound(this.soundBrick, 1);
+
+    // 4-piece explosion (classic Mario style)
+    const pieces = [
+        { vx: -2, vy: -4 },
+        { vx:  2, vy: -4 },
+        { vx: -1, vy: -2 },
+        { vx:  1, vy: -2 },
+    ];
+
+    const frame = [16, 150, 8, 8]; // small chunk sprite (adjust!)
+
+    pieces.forEach(p => {
+        this.game.debris.push(
+            new BrickDebris(
+                this.game,
+                this.position.x + 4,
+                this.position.y + 4,
+                p.vx,
+                p.vy,
+                frame
+            )
+        );
+    });
+
+    this.remove = true; // remove brick immediately
+}
 
     update() {
         if (this.isBroken) {

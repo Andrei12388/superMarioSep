@@ -12,6 +12,7 @@ export class MarioScene {
         this.image = document.querySelector('img[alt="level1"]');
         this.stageMusic = document.querySelector('audio#music-ground');
         this.soundPowerDown = document.querySelector('audio#sound-powerDown');
+        this.debris = [];
         this.stageMusic.play();
         this.onGround = false;
 
@@ -26,8 +27,7 @@ export class MarioScene {
         this.bricks = [
             new Brick(this, 326, 141),
             new Brick(this, 160, 140),
-            new Brick(this, 30, 140),
-            new Brick(this, 60, 140),
+          
             new SecretBlock(this, 345,141),
             new Ground(this, 0, 208, 1100, 16),
             new Ground(this, 442, 175, 34, 30)
@@ -110,6 +110,8 @@ for (const brick of this.bricks) {
 }
 
     update(time) {
+        this.debris.forEach(d => d.update());
+        this.debris = this.debris.filter(d => d.life > 0);
         this.updateEntities(time);
         this.mario.update(time);
 
@@ -194,5 +196,6 @@ for (const brick of this.bricks) {
             this.mario.direction
         );
        this.mario.drawDebug(context, this.stage);
+       this.debris.forEach(d => d.draw(context, this.stage));
     }
 }
