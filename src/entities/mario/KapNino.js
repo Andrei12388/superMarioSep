@@ -165,24 +165,21 @@ update(time) {
         return;
     }
 
-    // --- Horizontal movement ---
     const speed = 0.5;
+
+    // --- Horizontal movement based on direction ---
     this.velocity.x = this.direction * speed;
 
     // --- Apply gravity ---
     this.velocity.y += this.gravity;
 
-    // Tentative next position
     let newX = this.position.x + this.velocity.x;
     let newY = this.position.y + this.velocity.y;
-
-    // Reset ground flag
     this.onGround = false;
 
-    // --- Check brick collisions ---
+    // --- Check collisions ---
     for (const brick of this.game.bricks) {
         if (brick.isBroken) continue;
-
         const brickBox = brick.getWorldBox();
         const pushBox = {
             x: newX + this.boxes.push.x,
@@ -194,58 +191,36 @@ update(time) {
         const kapFeetY = pushBox.y + pushBox.height;
         const kapLeft = pushBox.x;
         const kapRight = pushBox.x + pushBox.width;
+        const verticallyOverlapping = kapFeetY > brickBox.y + 2 && pushBox.y < brickBox.y + brickBox.height - 2;
 
-        const horizontallyOverlapping =
-            kapRight > brickBox.x &&
-            kapLeft < brickBox.x + brickBox.width;
-
-        // --- LANDING from above ---
+        // LANDING
         const landingTolerance = 5;
         if (this.velocity.y >= 0 &&
             kapFeetY <= brickBox.y + landingTolerance &&
             kapFeetY + this.velocity.y >= brickBox.y - landingTolerance &&
-            horizontallyOverlapping
+            kapRight > brickBox.x && kapLeft < brickBox.x + brickBox.width
         ) {
-            // Snap on top
             newY = brickBox.y - this.boxes.push.height - this.boxes.push.y;
             this.velocity.y = 0;
             this.onGround = true;
         }
 
-        // --- HORIZONTAL collision (walls) ---
-        const kapTop = pushBox.y;
-        const kapBottom = pushBox.y + pushBox.height;
-       // --- HORIZONTAL collision (walls) ---
-const verticalOverlap = kapBottom > brickBox.y + 2 && kapTop < brickBox.y + brickBox.height - 2; 
-// small tolerance to avoid flipping on landing
+        // HORIZONTAL collision
+        const fudge = 1;
+        const hittingLeftWall = this.direction > 0 && kapRight > brickBox.x + fudge && kapLeft < brickBox.x;
+        const hittingRightWall = this.direction < 0 && kapLeft < brickBox.x + brickBox.width - fudge && kapRight > brickBox.x + brickBox.width - fudge;
 
-const hittingLeftWall = this.direction > 0 && kapRight > brickBox.x && kapLeft < brickBox.x;
-const hittingRightWall = this.direction < 0 && kapLeft < brickBox.x + brickBox.width && kapRight > brickBox.x;
-
-if (verticalOverlap && (hittingLeftWall || hittingRightWall)) {
-    // Reverse direction
-    this.direction *= -1;
-    this.velocity.x = this.direction * speed;
-    newX = this.position.x; // stay in place
-}
+        if (verticallyOverlapping && (hittingLeftWall || hittingRightWall)) {
+            this.direction *= -1; // flip direction
+            this.velocity.x = this.direction * speed; // immediately apply new velocity
+            newX = this.position.x; // prevent penetration
+        }
     }
 
-    // Update position
     this.position.x = newX;
     this.position.y = newY;
 
-    // --- FSM ---
-    const state = this.states[this.currentState];
-    if (state && state.update) state.update(time);
-
     this.updateBoxes();
-
-    // Animate
-    this.animationTimer++;
-    if (this.animationTimer >= 10) {
-        this.animationFrame = (this.animationFrame + 1) % this.frames.get(this.currentAnimationKey).length;
-        this.animationTimer = 0;
-    }
 }
 
     // --- DEBUG DRAW ---

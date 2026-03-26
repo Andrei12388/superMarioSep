@@ -25,7 +25,8 @@ export class MarioScene {
             new Brick(this, 160, 150),
             new Brick(this, 30, 150),
             new Brick(this, 60, 150),
-            new Ground(this, 0, 208, 1100, 16)
+            new Ground(this, 0, 208, 1100, 16),
+            new Ground(this, 200, 110, 16, 100)
         ];
 
         this.frames = new Map([['stage', [5, 0, 3584, 480]]]);

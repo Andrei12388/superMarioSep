@@ -117,6 +117,36 @@ export class Mario {
         this.velocity.x += this.acceleration;
         this.velocity.x = Math.min(this.velocity.x, this.maxSpeed);
         this.position.x += this.velocity.x;
+        // --- Horizontal collisions ---
+for (const brick of this.game.bricks) {
+    if (brick.isBroken) continue;
+
+    const brickBox = brick.getWorldBox();
+    const pushBox = {
+        x: this.position.x + this.boxes.push.x,
+        y: this.position.y + this.boxes.push.y,
+        width: this.boxes.push.width,
+        height: this.boxes.push.height,
+    };
+
+    // Only check horizontal collisions if vertically overlapping
+    const verticallyOverlapping =
+        pushBox.y + pushBox.height > brickBox.y &&
+        pushBox.y < brickBox.y + brickBox.height;
+
+    if (!verticallyOverlapping) continue;
+
+    // Moving right into a brick
+    if (this.velocity.x > 0 && pushBox.x + pushBox.width > brickBox.x && pushBox.x < brickBox.x) {
+        this.position.x = brickBox.x - pushBox.width - this.boxes.push.x;
+        this.velocity.x = 0;
+    }
+    // Moving left into a brick
+    else if (this.velocity.x < 0 && pushBox.x < brickBox.x + brickBox.width && pushBox.x + pushBox.width > brickBox.x + brickBox.width) {
+        this.position.x = brickBox.x + brickBox.width - this.boxes.push.x;
+        this.velocity.x = 0;
+    }
+}
 
         if (!control.isForward(0, 1)) this.changeState(FighterState.IDLE, 'idleSmall');
         if (control.isHeavyKick(0) && this.onGround) this.velocity.y = -this.jumpForce;
@@ -126,6 +156,36 @@ export class Mario {
         this.velocity.x -= this.acceleration;
         this.velocity.x = Math.max(this.velocity.x, -this.maxSpeed);
         this.position.x += this.velocity.x;
+        // --- Horizontal collisions ---
+for (const brick of this.game.bricks) {
+    if (brick.isBroken) continue;
+
+    const brickBox = brick.getWorldBox();
+    const pushBox = {
+        x: this.position.x + this.boxes.push.x,
+        y: this.position.y + this.boxes.push.y,
+        width: this.boxes.push.width,
+        height: this.boxes.push.height,
+    };
+
+    // Only check horizontal collisions if vertically overlapping
+    const verticallyOverlapping =
+        pushBox.y + pushBox.height > brickBox.y &&
+        pushBox.y < brickBox.y + brickBox.height;
+
+    if (!verticallyOverlapping) continue;
+
+    // Moving right into a brick
+    if (this.velocity.x > 0 && pushBox.x + pushBox.width > brickBox.x && pushBox.x < brickBox.x) {
+        this.position.x = brickBox.x - pushBox.width - this.boxes.push.x;
+        this.velocity.x = 0;
+    }
+    // Moving left into a brick
+    else if (this.velocity.x < 0 && pushBox.x < brickBox.x + brickBox.width && pushBox.x + pushBox.width > brickBox.x + brickBox.width) {
+        this.position.x = brickBox.x + brickBox.width - this.boxes.push.x;
+        this.velocity.x = 0;
+    }
+}
 
         if (!control.isBackward(0, 1)) this.changeState(FighterState.IDLE, 'idleSmall');
         if (control.isHeavyKick(0) && this.onGround) this.velocity.y = -this.jumpForce;
@@ -199,6 +259,8 @@ for (const brick of this.game.bricks) {
         pushBox.x < brickBox.x + brickBox.width;
 
     const tolerance = 5; // slightly bigger to prevent jitter
+
+    if(horizontallyOverlapping)console.log("Hori overlap")
 
     // --- LANDING from above ---
     if (this.velocity.y >= 0 && marioFeetY >= brickTopY - tolerance && marioFeetY <= brickTopY + this.velocity.y && horizontallyOverlapping) {
