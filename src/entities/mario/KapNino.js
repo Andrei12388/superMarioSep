@@ -4,7 +4,7 @@ import * as control from '../../inputHandler.js';
 export class KapNino {
     constructor(game, x, y) {
         this.game = game;
-
+         this.soundDead = document.querySelector('audio#sound-stomp');
         // --- Constants & initial state ---
         this.ground = 207;
         this.maxSpeed = 1;
@@ -96,7 +96,7 @@ export class KapNino {
        // --- dead STATE ---
    handleDeadInit() {
     console.log("Dead enemy");
-
+    this.soundDead.play()
     this.currentAnimationKey = 'dead';
     this.deathTimer = 0;
 

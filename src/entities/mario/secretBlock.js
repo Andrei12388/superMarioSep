@@ -3,11 +3,13 @@ export class SecretBlock {
         this.game = game;
         this.position = { x, y };
         this.image = document.querySelector('img[alt="mario"]');
+        this.soundCoin = document.querySelector('audio#sound-coin');
 
         // Always solid
         this.isSolid = true;
         this.bouncing = false;
         this.bounceY = 0;
+        this.disabled = false;
         this.bounceSpeed = -2;
         this.gravity = 0.2;
 
@@ -40,6 +42,7 @@ export class SecretBlock {
 
     // Headbutt logic
     hit() {
+       
         if (this.bouncing) return;
 
         this.bouncing = true;
@@ -58,15 +61,18 @@ export class SecretBlock {
     }
 
     spawnItem() {
+        this.soundCoin.play()
         console.log("💡 Spawn item here!");
     }
 
     update() {
+         if(this.disabled) return
         if (this.bouncing) {
             this.bounceY += this.bounceSpeed;
             this.bounceSpeed += this.gravity;
             if (this.bounceY >= 0) {
                 this.bounceY = 0;
+                  this.disabled = true;
                 this.bouncing = false;
             }
         }

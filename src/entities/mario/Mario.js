@@ -4,6 +4,8 @@ import * as control from '../../inputHandler.js';
 export class Mario {
     constructor(game) {
         this.game = game;
+        this.soundJump = document.querySelector('audio#sound-jump');
+        
 
         // --- Constants & initial state ---
         this.ground = 207;
@@ -102,6 +104,7 @@ export class Mario {
     handleIdleState() {
         if (control.isHeavyKick(0) && this.onGround) { // <-- property
             this.velocity.y = -this.jumpForce;
+            this.soundJump.play()
         } else if (control.isForward(0, 1)) {
             this.changeState(FighterState.WALK_FORWARD, 'walkSmall');
         } else if (control.isBackward(0, 1)) {
@@ -149,7 +152,10 @@ for (const brick of this.game.bricks) {
 }
 
         if (!control.isForward(0, 1)) this.changeState(FighterState.IDLE, 'idleSmall');
-        if (control.isHeavyKick(0) && this.onGround) this.velocity.y = -this.jumpForce;
+        if (control.isHeavyKick(0) && this.onGround) {
+           this.soundJump.play()
+            this.velocity.y = -this.jumpForce;
+        }
     }
 
     handleWalkBackwardState() {
@@ -188,7 +194,10 @@ for (const brick of this.game.bricks) {
 }
 
         if (!control.isBackward(0, 1)) this.changeState(FighterState.IDLE, 'idleSmall');
-        if (control.isHeavyKick(0) && this.onGround) this.velocity.y = -this.jumpForce;
+        if (control.isHeavyKick(0) && this.onGround){
+            this.soundJump.play()
+            this.velocity.y = -this.jumpForce;
+        } 
     }
 
     // --- BOXES ---
