@@ -49,10 +49,10 @@ export class Brick {
 
     // 4-piece explosion (classic Mario style)
     const pieces = [
-        { vx: -2, vy: -4 },
-        { vx:  2, vy: -4 },
-        { vx: -1, vy: -2 },
-        { vx:  1, vy: -2 },
+        { vx: -2, vy: -5 },
+        { vx:  2, vy: -5 },
+        { vx: -1, vy: -3 },
+        { vx:  1, vy: -3 },
     ];
 
     const frame = [16, 150, 8, 8]; // small chunk sprite (adjust!)

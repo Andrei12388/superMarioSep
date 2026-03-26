@@ -181,6 +181,18 @@ for (const brick of this.bricks) {
         }
     }
 
+    drawText(context){
+        context.font = "11px MarioFont";
+        context.fillStyle = "white";
+        context.fillText("Mario-Sep", 20, 20);
+        context.fillText("World", 224, 20);
+        context.fillText("Time", 304, 20);
+
+        context.fillText("000000", 20, 32);
+        context.fillText("1-1", 234, 32);
+        context.fillText("399", 314, 32);
+    }
+
     draw(context) {
         // Draw stage
         this.drawFrame(context, 'stage', -this.stage.x, -this.stage.y);
@@ -197,5 +209,7 @@ for (const brick of this.bricks) {
         );
        this.mario.drawDebug(context, this.stage);
        this.debris.forEach(d => d.draw(context, this.stage));
+       this.drawText(context)
+     
     }
 }
