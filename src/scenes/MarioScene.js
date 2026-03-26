@@ -5,11 +5,13 @@ import { KapNino } from '../entities/mario/KapNino.js';
 import { Mario } from '../entities/mario/Mario.js';
 import { SecretBlock } from '../entities/mario/secretBlock.js';
 import * as control from '../inputHandler.js';
+import { playSound } from '../soundHandler.js';
 
 export class MarioScene {
     constructor() {
         this.image = document.querySelector('img[alt="level1"]');
         this.stageMusic = document.querySelector('audio#music-ground');
+        this.soundPowerDown = document.querySelector('audio#sound-powerDown');
         this.stageMusic.play();
         this.onGround = false;
 
@@ -138,6 +140,7 @@ for (const brick of this.bricks) {
                 this.mario.velocity.x = 3 * this.mario.direction * -1;
                 this.mario.velocity.y -= 3;
                 console.log("Mario damaged!");
+                playSound(this.soundPowerDown,1)
             }
         }
 
@@ -162,7 +165,7 @@ for (const brick of this.bricks) {
     drawEntities(context) {
         for (const brick of this.bricks) {
             brick.draw(context, this.stage);
-           // brick.drawDebug(context, this.stage);
+            brick.drawDebug(context, this.stage);
         }
 
         for (const enemy of this.enemies) {
@@ -172,7 +175,7 @@ for (const brick of this.bricks) {
                 enemy.position.y - this.stage.y,
                 enemy.direction
             );
-           // enemy.drawDebug(context, this.stage);
+            enemy.drawDebug(context, this.stage);
         }
     }
 
@@ -190,6 +193,6 @@ for (const brick of this.bricks) {
             this.mario.position.y - this.stage.y,
             this.mario.direction
         );
-      //  this.mario.drawDebug(context, this.stage);
+       this.mario.drawDebug(context, this.stage);
     }
 }

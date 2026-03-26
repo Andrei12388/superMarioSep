@@ -83,6 +83,8 @@ export class Mario {
 
     // --- STATE HANDLING ---
     changeState(newState, animationKey = null, ...args) {
+         
+
         const state = this.states[newState];
         if (!state || !state.validFrom.includes(this.currentState)) return;
 
