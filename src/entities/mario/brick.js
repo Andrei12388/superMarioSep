@@ -1,4 +1,5 @@
 import { playSound } from '../../soundHandler.js';
+import { gameState } from '../../state/gameState.js';
 import { BrickDebris } from './brokenDebris.js';
 export class Brick {
     constructor(game, x, y) {
@@ -46,6 +47,7 @@ export class Brick {
 
     this.isBroken = true;
     playSound(this.soundBrick, 1);
+    gameState.mario.score += 100;
 
     // 4-piece explosion (classic Mario style)
     const pieces = [

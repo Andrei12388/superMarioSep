@@ -1,5 +1,6 @@
 
 import { playSound } from '../../soundHandler.js';
+import { gameState } from '../../state/gameState.js';
 export class SecretBlock {
     constructor(game, x, y) {
         this.game = game;
@@ -67,6 +68,7 @@ export class SecretBlock {
 
     spawnItem() {
         this.soundCoin.play();
+        gameState.mario.score += 100;
         console.log("💡 Spawn item here!");
     }
 

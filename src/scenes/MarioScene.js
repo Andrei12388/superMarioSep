@@ -6,6 +6,7 @@ import { Mario } from '../entities/mario/Mario.js';
 import { SecretBlock } from '../entities/mario/secretBlock.js';
 import * as control from '../inputHandler.js';
 import { playSound } from '../soundHandler.js';
+import { gameState } from '../state/gameState.js';
 
 export class MarioScene {
     constructor() {
@@ -110,6 +111,19 @@ for (const brick of this.bricks) {
 }
 
     update(time) {
+        // Initialize timer helpers (only once)
+if (!this.timeCounter) this.timeCounter = 0;
+
+// Count down every ~1 second (assuming 60 FPS)
+this.timeCounter += 1;
+
+if (this.timeCounter >= 60) {
+    this.timeCounter = 0;
+
+    if (gameState.mario.time > 0) {
+        gameState.mario.time--;
+    }
+}
         this.debris.forEach(d => d.update());
         this.debris = this.debris.filter(d => d.life > 0);
         this.updateEntities(time);
@@ -188,9 +202,13 @@ for (const brick of this.bricks) {
         context.fillText("World", 224, 20);
         context.fillText("Time", 304, 20);
 
-        context.fillText("000000", 20, 32);
+        context.fillText(String(gameState.mario.score).padStart(6, '0'), 20, 32);
         context.fillText("1-1", 234, 32);
-        context.fillText("399", 314, 32);
+        context.fillText(
+        String(gameState.mario.time).padStart(3, '0'),
+            314,
+            32
+        );
     }
 
     draw(context) {

@@ -1,6 +1,7 @@
 import { FighterState, FrameDelay } from '../../constants/fighter.js';
 import * as control from '../../inputHandler.js';
 import { playSound } from '../../soundHandler.js';
+import { gameState } from '../../state/gameState.js';
 
 export class KapNino {
     constructor(game, x, y) {
@@ -101,6 +102,8 @@ export class KapNino {
    
     playSound(this.soundDead, 1)
     playSound(this.soundKapDead, 1)
+
+    gameState.mario.score += 100;
    
     this.currentAnimationKey = 'dead';
     this.deathTimer = 0;
