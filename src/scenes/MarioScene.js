@@ -21,17 +21,33 @@ export class MarioScene {
         this.mario = new Mario(this);
 
         this.enemies = [
-            new KapNino(this, 220, 150),
-            new KapNino(this, 260, 150),
+            new KapNino(this, 400, 150),
+            new KapNino(this, 440, 150),
         ];
 
         this.bricks = [
-            new Brick(this, 326, 141),
-            new Brick(this, 160, 140),
+            new Brick(this, 320, 141),
+            new Brick(this, 352, 141),
+            new Brick(this, 384, 141),
           
-            new SecretBlock(this, 345,141),
+            new SecretBlock(this, 336,141),
+            new SecretBlock(this, 256,141),
+            new SecretBlock(this, 368,141),
+            new SecretBlock(this, 353,80),
+
+            //ground
             new Ground(this, 0, 208, 1100, 16),
-            new Ground(this, 442, 175, 34, 30)
+            new Ground(this, 1131, 208, 240, 16),
+            new Ground(this, 1419, 208, 1024, 16),
+            new Ground(this, 2475, 208, 1105, 16),
+
+            //pipes
+            new Ground(this, 442, 175, 34, 30),
+            new Ground(this, 602, 160, 32, 48),
+            new Ground(this, 731, 144, 31, 64),
+            new Ground(this, 907, 144, 31, 64),
+            new Ground(this, 2602, 176, 32, 32),
+            new Ground(this, 2857, 176, 32, 32),
         ];
 
         this.frames = new Map([['stage', [5, 0, 3584, 480]]]);

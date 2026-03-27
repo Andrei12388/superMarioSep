@@ -10,7 +10,7 @@ export class Mario {
 
         // --- Constants & initial state ---
         this.ground = 207;
-        this.maxSpeed = 1.2;
+        this.maxSpeed = 2;
         this.acceleration = 0.1;
         this.friction = 0.1;
         this.gravity = 0.5;
