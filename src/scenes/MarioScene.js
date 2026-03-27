@@ -58,7 +58,11 @@ export class MarioScene {
             new SecretBlock(this, 1792, 141),
 
           
-            new SecretBlock(this, 336,141),
+            //early stage blocks
+            new SecretBlock(this, 336,141,{
+                type: 'powerup',
+                power: 'mushroom'
+            }),
             new SecretBlock(this, 256,141),
             new SecretBlock(this, 368,141),
             new SecretBlock(this, 353,80),
