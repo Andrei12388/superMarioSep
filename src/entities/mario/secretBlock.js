@@ -1,10 +1,14 @@
 
 import { playSound } from '../../soundHandler.js';
 import { gameState } from '../../state/gameState.js';
+import { CoinPop } from './coinPop.js';
 export class SecretBlock {
-    constructor(game, x, y) {
+    constructor(game, x, y, config = {}) {
         this.game = game;
         this.position = { x, y };
+
+         this.type = config.type || 'coin'; // default
+         this.config = config;
         this.image = document.querySelector('img[alt="mario"]');
         this.soundCoin = document.querySelector('audio#sound-coin');
         this.soundBump = document.querySelector('audio#sound-bump');
@@ -67,6 +71,46 @@ export class SecretBlock {
     }
 
     spawnItem() {
+    switch (this.type) {
+        case 'coin':
+            this.spawnCoin();
+            break;
+
+        case 'powerup':
+            this.spawnPowerUp();
+            break;
+
+        default:
+            console.warn('Unknown block type:', this.type);
+    }
+}
+
+spawnCoin() {
+    playSound(this.soundCoin, 1);
+    gameState.mario.score += 100;
+
+    const coin = new CoinPop(
+        this.game,
+        this.position.x,
+        this.position.y - 16, // pop above block
+        0,                    // vx
+        -4,                   // vy (shoot upward)
+        [194, 150, 14, 15]   // 👈 your coin sprite frame
+    );
+
+    this.game.debris.push(coin);
+}
+
+spawnPowerUp() {
+    console.log('Spawn powerup:', this.config.power);
+
+    // Example (you’ll implement later)
+    // this.game.entities.push(
+    //     new Mushroom(this.game, this.position.x, this.position.y)
+    // );
+}
+
+    spawnItems() {
         this.soundCoin.play();
         gameState.mario.score += 100;
         console.log("💡 Spawn item here!");

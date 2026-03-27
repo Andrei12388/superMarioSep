@@ -39,25 +39,12 @@ export class Ground {
     }
 
     break() {
-        if (this.isBroken) return;
-
-        this.isBroken = true;
-        this.breakTimer = 0;
-
+     
         console.log("Brick broken!");
     }
 
     update() {
-        if (this.isBroken) {
-            this.breakTimer++;
-
-            // simple "pop" effect
-            this.position.y -= 1;
-
-            if (this.breakTimer >= this.breakDuration) {
-                this.remove = true;
-            }
-        }
+       
     }
 
     draw(context, stage) {

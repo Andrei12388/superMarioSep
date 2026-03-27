@@ -14,6 +14,7 @@ export class MarioScene {
         this.stageMusic = document.querySelector('audio#music-ground');
         this.soundPowerDown = document.querySelector('audio#sound-powerDown');
         this.debris = [];
+        this.scoreTexts = [];
         this.stageMusic.play();
         this.onGround = false;
 
@@ -29,6 +30,33 @@ export class MarioScene {
             new Brick(this, 320, 141),
             new Brick(this, 352, 141),
             new Brick(this, 384, 141),
+
+            new Brick(this, 1232, 141),
+            new SecretBlock(this, 1248,141),
+            new Brick(this, 1264, 141),
+
+            new Brick(this, 1280, 80),
+            new Brick(this, 1296, 80),
+            new Brick(this, 1312, 80),
+            new Brick(this, 1328, 80),
+            new Brick(this, 1344, 80),
+            new Brick(this, 1360, 80),
+            new Brick(this, 1376, 80),
+            new Brick(this, 1392, 80),
+
+            new Brick(this, 1456, 80),
+            new Brick(this, 1472, 80),
+            new SecretBlock(this, 1488, 80),
+            new Brick(this, 1498, 141),
+
+            new Brick(this, 1600, 141),
+            new Brick(this, 1616, 141),
+
+            new SecretBlock(this, 1696, 141),
+            new SecretBlock(this, 1744, 141),
+            new SecretBlock(this, 1744, 80),
+            new SecretBlock(this, 1792, 141),
+
           
             new SecretBlock(this, 336,141),
             new SecretBlock(this, 256,141),
@@ -48,6 +76,33 @@ export class MarioScene {
             new Ground(this, 907, 144, 31, 64),
             new Ground(this, 2602, 176, 32, 32),
             new Ground(this, 2857, 176, 32, 32),
+
+            //heavybrick
+            new Ground(this, 2155, 176, 48, 32),
+            new Ground(this, 2139, 192, 16, 16),
+            new Ground(this, 2171, 160, 32, 16),
+            new Ground(this, 2187, 144, 16, 16),
+
+            new Ground(this, 2235, 176, 48, 32),
+            new Ground(this, 2283, 192, 16, 16),
+            new Ground(this, 2235, 160, 32, 16),
+            new Ground(this, 2235, 144, 16, 16),
+
+            new Brick(this, 1888, 141),
+            
+            new Brick(this, 2048, 80),
+            new SecretBlock(this, 2062, 80),
+            new SecretBlock(this, 2078, 80),
+            new Brick(this, 2094, 80),
+
+            new Brick(this, 2062, 141),
+            new Brick(this, 2078, 141),
+
+            new Brick(this, 2688, 141),
+            new Brick(this, 2704, 141),
+            new SecretBlock(this, 2720, 141),
+            new Brick(this, 2736, 141),
+
         ];
 
         this.frames = new Map([['stage', [5, 0, 3584, 480]]]);
@@ -128,6 +183,8 @@ for (const brick of this.bricks) {
 
     update(time) {
         // Initialize timer helpers (only once)
+        this.scoreTexts.forEach(t => t.update());
+this.scoreTexts = this.scoreTexts.filter(t => !t.markedForDeletion);
 if (!this.timeCounter) this.timeCounter = 0;
 
 // Count down every ~1 second (assuming 60 FPS)
@@ -243,6 +300,7 @@ if (this.timeCounter >= 50) {
         );
        this.mario.drawDebug(context, this.stage);
        this.debris.forEach(d => d.draw(context, this.stage));
+       this.scoreTexts.forEach(t => t.draw(context, this.stage));
        this.drawText(context)
      
     }
