@@ -103,6 +103,7 @@ export class Brick {
     }
 
     drawDebug(context, stage) {
+        if (this.isBroken) return;
         const box = this.getWorldBox();
 
         context.strokeStyle = 'orange';

@@ -202,7 +202,7 @@ if (this.timeCounter >= 50) {
     }
 }
         this.debris.forEach(d => d.update());
-        this.debris = this.debris.filter(d => d.life > 0);
+       this.debris = this.debris.filter(d => !d.markedForDeletion);
         this.updateEntities(time);
         this.mario.update(time);
 

@@ -2,6 +2,7 @@
 import { playSound } from '../../soundHandler.js';
 import { gameState } from '../../state/gameState.js';
 import { CoinPop } from './coinPop.js';
+import { PowerUpMushRoom } from './powerUpMushroom.js';
 export class SecretBlock {
     constructor(game, x, y, config = {}) {
         this.game = game;
@@ -104,10 +105,28 @@ spawnCoin() {
 spawnPowerUp() {
     console.log('Spawn powerup:', this.config.power);
 
-    // Example (you’ll implement later)
-    // this.game.entities.push(
-    //     new Mushroom(this.game, this.position.x, this.position.y)
-    // );
+    if (!this.config.power) return;
+    playSound(document.querySelector('audio#sound-powerUpPop'), 1);
+    let powerUp = null;
+
+    switch (this.config.power) {
+        case 'mushroom':
+            powerUp = new PowerUpMushRoom(
+                this.game,
+                this.position.x,
+                this.position.y - 100 // pop above the block
+            );
+            break;
+
+        // You can add more power-ups here
+        // case 'flower': ...
+        // case 'star': ...
+    }
+
+    if (powerUp) {
+        // Add it to debris array so it updates and draws automatically
+        this.game.debris.push(powerUp);
+    }
 }
 
     spawnItems() {
