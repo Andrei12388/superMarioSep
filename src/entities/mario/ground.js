@@ -7,7 +7,7 @@ export class Ground {
 
         this.image = document.querySelector('img[alt="mario"]');
 
-        this.isBroken = false;
+      
         this.breakTimer = 0;
         this.breakDuration = 20;
         this.remove = false;

@@ -117,7 +117,7 @@ if (!this.timeCounter) this.timeCounter = 0;
 // Count down every ~1 second (assuming 60 FPS)
 this.timeCounter += 1;
 
-if (this.timeCounter >= 60) {
+if (this.timeCounter >= 50) {
     this.timeCounter = 0;
 
     if (gameState.mario.time > 0) {

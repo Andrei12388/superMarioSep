@@ -10,7 +10,7 @@ export class Mario {
 
         // --- Constants & initial state ---
         this.ground = 207;
-        this.maxSpeed = 2;
+        this.maxSpeed = 1.2;
         this.acceleration = 0.1;
         this.friction = 0.1;
         this.gravity = 0.5;
@@ -100,11 +100,12 @@ export class Mario {
 
     // --- IDLE STATE ---
     handleIdleInit() {
-        this.resetVelocities();
+       // this.resetVelocities();
         this.currentAnimationKey = 'idleSmall';
     }
 
     handleIdleState() {
+        
         if (control.isHeavyKick(0) && this.onGround) { // <-- property
             this.velocity.y = -this.jumpForce;
              playSound(this.soundJump, 1)
@@ -120,7 +121,7 @@ export class Mario {
     handleWalkBackwardInit() { this.direction = -1; this.currentAnimationKey = 'walkSmall'; }
 
     handleWalkForwardState() {
-        this.velocity.x += this.acceleration;
+       
         this.velocity.x = Math.min(this.velocity.x, this.maxSpeed);
         this.position.x += this.velocity.x;
         // --- Horizontal collisions ---
@@ -162,7 +163,7 @@ for (const brick of this.game.bricks) {
     }
 
     handleWalkBackwardState() {
-        this.velocity.x -= this.acceleration;
+      
         this.velocity.x = Math.max(this.velocity.x, -this.maxSpeed);
         this.position.x += this.velocity.x;
         // --- Horizontal collisions ---
@@ -240,6 +241,31 @@ checkCollision(box) {
 
     // --- PHYSICS & UPDATE ---
    update(time) {
+    // --- Apply horizontal friction ALWAYS ---
+if (!control.isForward(0, 1) && !control.isBackward(0, 1)) {
+    if (this.velocity.x > 0) {
+        this.velocity.x -= this.friction;
+        if (this.velocity.x < 0) this.velocity.x = 0;
+    } else if (this.velocity.x < 0) {
+        this.velocity.x += this.friction;
+        if (this.velocity.x > 0) this.velocity.x = 0;
+    }
+}
+// --- Horizontal input acceleration ---
+if (control.isForward(0, 1)) {
+    this.velocity.x += this.acceleration;
+    this.direction = 1;
+}
+
+if (control.isBackward(0, 1)) {
+    this.velocity.x -= this.acceleration;
+    this.direction = -1;
+}
+
+this.position.x += this.velocity.x;
+
+// Clamp speed
+this.velocity.x = Math.max(-this.maxSpeed, Math.min(this.velocity.x, this.maxSpeed));
     if (this.isHurt) {
         this.hurtTimer--;
         if (this.hurtTimer <= 0) this.isHurt = false;
