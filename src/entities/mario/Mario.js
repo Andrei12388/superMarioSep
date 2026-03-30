@@ -23,6 +23,8 @@ export class Mario {
         this.isHurt = false;
         this.hurtTimer = 0;
 
+        this.alpha = 1;
+
         // --- ON GROUND FLAG ---
         this.onGround = false; // <-- property only, no method
 
@@ -133,6 +135,7 @@ export class Mario {
     }
     handleGrowInit() {
         this.resetVelocities();
+        this.alpha = 0.5;
         this.currentAnimationKey = this.isBig ? 'growSmall' : 'growBig';
     }
 
@@ -143,12 +146,14 @@ export class Mario {
     if (this.animationFrame === frames.length - 1) {
         if (this.currentAnimationKey === 'growBig') {
             this.isBig = true;
+            this.alpha = 1;
             this.isPoweredUp = true;
             this.changeState(FighterState.IDLE, 'idle');
         }
 
         if (this.currentAnimationKey === 'growSmall') {
             this.isBig = false;
+            this.alpha = 1;
             this.isPoweredUp = false;
             this.changeState(FighterState.IDLE, 'idleSmall');
         }
@@ -171,7 +176,7 @@ export class Mario {
     handleWalkBackwardInit() { this.direction = -1; this.currentAnimationKey = this.isBig ? 'walk' : 'walkSmall'; }
 
     handleWalkForwardState() {
-        const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);        if (isRunning) console.log('Running forward');        const currentMaxSpeed = isRunning ? 2.0 : this.maxSpeed;
+        const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);        if (isRunning) console.log('Running forward');        const currentMaxSpeed = isRunning ? 1.6 : this.maxSpeed;
         this.velocity.x = Math.min(this.velocity.x, currentMaxSpeed);
         this.position.x += this.velocity.x;
         // --- Horizontal collisions ---
@@ -214,7 +219,7 @@ export class Mario {
     }
 
     handleWalkBackwardState() {
-        const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);        if (isRunning) console.log('Running backward');        const currentMaxSpeed = isRunning ? 2.0 : this.maxSpeed;
+        const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);        if (isRunning) console.log('Running backward');        const currentMaxSpeed = isRunning ? 1.6 : this.maxSpeed;
         this.velocity.x = Math.max(this.velocity.x, -currentMaxSpeed);
         this.position.x += this.velocity.x;
         // --- Horizontal collisions ---
@@ -317,7 +322,7 @@ if (control.isBackward(0, 1)) {
 this.position.x += this.velocity.x;
 
 // Determine max speed based on running (holding low punch or low kick)
-const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);if (isRunning) console.log('Running (update clamp)');const maxSpeed = isRunning ? 2.0 : this.maxSpeed;
+const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);if (isRunning) console.log('Running (update clamp)');const maxSpeed = isRunning ? 1.6 : this.maxSpeed;
 
 // Clamp speed
 this.velocity.x = Math.max(-maxSpeed, Math.min(this.velocity.x, maxSpeed));
@@ -415,7 +420,7 @@ if (this.animationTimer >= 10) {
         const [[sx, sy, sw, sh], [ox, oy]] = frame;
 
         context.save();
-        context.globalAlpha = alpha;
+        context.globalAlpha = this.alpha * alpha;
         context.translate(x, y);
         context.scale(direction * scale, scale);
         context.drawImage(this.image, sx, sy, sw, sh, -ox, -oy, sw, sh);
