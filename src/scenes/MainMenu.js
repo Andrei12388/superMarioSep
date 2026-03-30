@@ -2,7 +2,9 @@ import * as control from '../inputHandler.js';
 import { playSound } from '../soundHandler.js';
 import { gameState } from '../state/gameState.js';
 import { MarioScene } from './MarioScene.js';
+import { CharacterSelect } from './CharacterSelect.js';
 import { drawText } from '../utils/UIHandler.js';
+import { LevelTransition } from './levelTransition.js';
 
 export class MainMenu {
     constructor(game) {
@@ -46,8 +48,12 @@ export class MainMenu {
         if(control.isStart(0,1) || control.isLightKick(0,1) || control.isHeavyKick(0,1) || control.isLightPunch(0,1) || control.isHeavyPunch(0,1)) {
             playSound(this.soundPowerDown, 1);
             this.stageMusic.pause();
-            // Transition to character select or next scene
-            this.game.setScene(new MarioScene(this.game));
+
+            const players = this.selection === 1 ? 2 : 1;
+            this.game.setScene(new LevelTransition(this.game, {
+                players,
+                nextSceneClass: MarioScene
+            }));
         }
 
         // Update kapHead position based on selection

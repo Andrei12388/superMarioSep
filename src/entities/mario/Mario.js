@@ -517,6 +517,7 @@ if (this.animationTimer >= 10) {
     this.game.stageMusic.pause();
     this.gameOver.currentTime = 0;
     playSound(this.gameOver, 1);
+    gameState.mario.lives--;
     this.isDead = true;
     this.deathTimer = 0;
     this.deathPhase = 0;

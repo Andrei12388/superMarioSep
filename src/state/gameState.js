@@ -109,6 +109,7 @@ export const gameState = {
       time: 400,
       coins: 0,
     },
-
+    world: 1,
+    level: 1,
     changeScene: false,
 };

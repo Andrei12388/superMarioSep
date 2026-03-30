@@ -8,6 +8,7 @@ import * as control from '../inputHandler.js';
 import { playSound } from '../soundHandler.js';
 import { gameState } from '../state/gameState.js';
 import { drawText } from '../utils/UIHandler.js';
+import { LevelTransition } from './levelTransition.js';
 
 export class MarioScene {
     constructor(game) {
@@ -202,7 +203,7 @@ for (const brick of this.bricks) {
 }
 
     update(time) {
-        if(gameState.changeScene) this.game.setScene(new MarioScene(this.game));;
+        if(gameState.changeScene) this.game.setScene(new LevelTransition(this.game));;
         this.mario.update(time);
 
 if (this.mario.isDead) return;
