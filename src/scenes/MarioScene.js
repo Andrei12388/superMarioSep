@@ -10,10 +10,14 @@ import { gameState } from '../state/gameState.js';
 import { drawText } from '../utils/UIHandler.js';
 
 export class MarioScene {
-    constructor() {
+    constructor(game) {
+        gameState.changeScene = false;
+        this.game = game;
         this.image = document.querySelector('img[alt="level1"]');
         this.imageUI = document.querySelector('img[alt="mario"]');
         this.stageMusic = document.querySelector('audio#music-ground');
+        this.stageMusic.currentTime = 0;
+       
         this.soundPowerDown = document.querySelector('audio#sound-powerDown');
         this.debris = [];
         this.scoreTexts = [];
@@ -198,6 +202,10 @@ for (const brick of this.bricks) {
 }
 
     update(time) {
+        if(gameState.changeScene) this.game.setScene(new MarioScene(this.game));;
+        this.mario.update(time);
+
+if (this.mario.isDead) return;
         // Initialize timer helpers (only once)
         this.scoreTexts.forEach(t => t.update(time));
 this.scoreTexts = this.scoreTexts.filter(t => !t.markedForDeletion);
@@ -215,7 +223,7 @@ if (this.timeCounter >= 1) {
 this.debris.forEach(d => d.update(time));
 this.debris = this.debris.filter(d => !d.markedForDeletion);
         this.updateEntities(time);
-        this.mario.update(time);
+        
 
         if (this.mario.currentState !== FighterState.GROW) {
         for (const enemy of this.enemies) {

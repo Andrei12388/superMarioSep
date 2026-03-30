@@ -2,12 +2,13 @@ import { FighterState, FrameDelay } from '../../constants/fighter.js';
 import { Control } from '../../constants/control.js';
 import * as control from '../../inputHandler.js';
 import { playSound } from '../../soundHandler.js';
+import { gameState } from '../../state/gameState.js';
 
 export class Mario {
     constructor(game) {
         this.game = game;
         this.soundJump = document.querySelector('audio#sound-jump');
-        
+         this.gameOver = document.querySelector('audio#music-gameOver');
 
         // --- Constants & initial state ---
         this.ground = 207;
@@ -24,6 +25,10 @@ export class Mario {
         this.hurtTimer = 0;
 
         this.alpha = 1;
+
+        this.isDead = false;
+        this.deathTimer = 0;
+        this.deathPhase = 0; // 0 = pause, 1 = jump, 2 = falling
 
         // --- ON GROUND FLAG ---
         this.onGround = false; // <-- property only, no method
@@ -296,8 +301,37 @@ checkCollision(box) {
     );
 }
 
+handleDeath(time) {
+    this.deathTimer += time.secondsPassed;
+
+    // Phase 0: short pause (like NES freeze)
+    if (this.deathPhase === 0) {
+        if (this.deathTimer > 0.3) {
+            this.deathPhase = 1;
+            this.velocity.y = -8; // jump upward
+        }
+        return;
+    }
+
+    // Phase 1 & 2: physics (rise then fall)
+    this.velocity.y += this.gravity;
+    this.position.y += this.velocity.y;
+
+    // After 3 seconds → change scene
+    if (this.deathTimer >= 5) {
+        console.log("Changing to Game Over scene");
+        
+            gameState.changeScene = true;
+        
+    }
+}
+
     // --- PHYSICS & UPDATE ---
    update(time) {
+    if (this.isDead) {
+    this.handleDeath(time);
+    return; // stop ALL normal logic
+}
     // --- Apply horizontal friction ALWAYS ---
 if (!control.isForward(0, 1) && !control.isBackward(0, 1)) {
     if (this.velocity.x > 0) {
@@ -478,12 +512,25 @@ if (this.animationTimer >= 10) {
         this.changeState(FighterState.IDLE, 'idleSmall');
     }
 
-    die() {
-        this.lives = Math.max(0, this.lives - 1);
-        this.isHurt = false;
-        this.hurtTimer = 0;
-        this.velocity = { x: 0, y: 0 };
-        this.position = { x: 50, y: 20 };
-        this.changeState(FighterState.IDLE, this.isBig ? 'idle' : 'idleSmall');
-    }
+   die() {
+    if (this.isDead) return;
+    this.game.stageMusic.pause();
+    this.gameOver.currentTime = 0;
+    playSound(this.gameOver, 1);
+    this.isDead = true;
+    this.deathTimer = 0;
+    this.deathPhase = 0;
+    this.alpha = 1;
+
+    this.resetVelocities();
+
+    // Force small Mario (NES behavior)
+    this.isBig = false;
+    this.isPoweredUp = false;
+
+    // Optional: set a death sprite later if you add one
+    this.currentAnimationKey = 'idleSmall';
+
+    console.log("Mario death triggered");
+}
 }
