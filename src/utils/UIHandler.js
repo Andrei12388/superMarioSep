@@ -32,7 +32,7 @@ export function drawText(context, image, frames) {
     context.font = "11px MarioFont";
     context.fillStyle = "white";
     context.fillText("Mario-Sep", 20, 20);
-    context.fillText("World", 224, 20);
+    context.fillText("Mundo", 224, 20);
     context.fillText("Time", 304, 20);
     
     context.fillText(`x`, 158, 32);

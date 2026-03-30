@@ -93,7 +93,7 @@ export class LevelTransition {
         }
 
         drawText(context, this.image, this.frames);
-        context.fillText(`World ${gameState.world}-${gameState.level}`, width/2-60, height/2-25);
+        context.fillText(`Mundo ${gameState.world}-${gameState.level}`, width/2-60, height/2-25);
         this.drawFrame(context,`mario`, width/2-60, height/2-5);
        
         context.fillText(` X ${gameState.mario.lives}`, width/2-25, height/2+20);

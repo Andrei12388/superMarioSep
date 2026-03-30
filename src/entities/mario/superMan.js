@@ -9,7 +9,10 @@ export class SuperMan {
         this.game = game;
 
         this.soundDead = document.querySelector('audio#sound-stomp');
-        this.soundKapDead = document.querySelector('audio#sound-kapDead');
+        this.soundSuperman = document.querySelector('audio#sound-superman');
+        this.soundSupermanLaser = document.querySelector('audio#sound-laserShot');
+        this.soundSuperman.volume = 0.5;
+        this.soundSupermanLaser.volume = 0.5;
 
         this.position = { x, y };
         this.velocity = { x: 0, y: 0 };
@@ -84,7 +87,7 @@ export class SuperMan {
             angle,
             4
         );
-
+        this.soundSuperman.play();
         // 🔥 push into enemies array so it updates/draws automatically
         this.game.enemies.push(laser);
     }
@@ -136,6 +139,7 @@ export class SuperMan {
 
     // START ATTACK
     if (!this.isAttacking && this.attackCooldownTimer >= this.attackCooldown) {
+        this.soundSupermanLaser.play();
         this.isAttacking = true;
         this.attackTimer = 0;
         this.attackCooldownTimer = 0;
@@ -211,6 +215,47 @@ if (distance > 5) {
     }
 
     this.updateBoxes();
+}
+
+    // --- DEBUG DRAW ---
+drawDebug(context, stageOffset = { x: 0, y: 0 }, scale = 1) {
+    const { push, hurt } = this.boxes;
+
+    const drawBox = (box, color) => {
+        context.strokeStyle = color;
+        context.lineWidth = 1;
+
+        // Calculate flipped position with stage offset applied
+        const x = this.direction === 1
+            ? this.position.x + box.x - stageOffset.x
+            : this.position.x - box.x - box.width - stageOffset.x;
+
+        const y = this.position.y + box.y - stageOffset.y;
+
+        context.strokeRect(
+            Math.floor(x * scale),
+            Math.floor(y * scale),
+            box.width * scale,
+            box.height * scale
+        );
+    };
+
+    // Push box (green)
+    drawBox(push, 'green');
+
+    // Hurt box (blue)
+    drawBox(hurt, 'blue');
+
+    // Optional: origin (red cross) with stage offset
+    context.beginPath();
+    context.strokeStyle = 'red';
+    const originX = this.position.x - stageOffset.x;
+    const originY = this.position.y - stageOffset.y;
+    context.moveTo(originX - 4, originY);
+    context.lineTo(originX + 5, originY);
+    context.moveTo(originX, originY - 5);
+    context.lineTo(originX, originY + 4);
+    context.stroke();
 }
 
     drawFrame(context, x, y, direction = 1) {

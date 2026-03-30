@@ -21,6 +21,8 @@ export class MarioScene {
         this.stageMusic = document.querySelector('audio#music-ground');
         this.stageMusic.currentTime = 0;
         gameState.mario.time = 400;
+
+        this.superManSpawned = false;
        
         this.soundPowerDown = document.querySelector('audio#sound-powerDown');
         this.debris = [];
@@ -46,7 +48,7 @@ export class MarioScene {
             new KapNino(this, 400, 150),
             new KapNino(this, 440, 150),
             new CloudEnemy(this, 470, 150),
-            new SuperMan(this, 300, 50),
+          //  new SuperMan(this, 2000, 50),
         ];
 
         this.bricks = [
@@ -279,6 +281,13 @@ export class MarioScene {
         for (const player of this.players) {
             player.update(time);
         }
+
+         // Spawn SuperMan dynamically when Mario reaches x = 1500
+    if (!this.superManSpawned && this.mario.position.x >= 700) {
+        this.enemies.push(new SuperMan(this, 1000, 35)); // spawn near the target position
+        this.superManSpawned = true; // make sure it only happens once
+        console.log("SuperMan spawned!");
+    }
 
         // continue if at least one player alive
         if (this.players.every(player => player.isDead)) return;
