@@ -392,7 +392,7 @@ export class MarioScene {
                 enemy.position.y - this.stage.y,
                 enemy.direction
             );
-            enemy.drawDebug?.(context, this.stage);
+           // enemy.drawDebug?.(context, this.stage);
         }
     }
 
@@ -411,7 +411,7 @@ export class MarioScene {
                 player.position.y - this.stage.y,
                 player.direction
             );
-            player.drawDebug(context, this.stage);
+           // player.drawDebug(context, this.stage);
         }
 
         this.debris.forEach(d => d.draw(context, this.stage));

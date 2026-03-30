@@ -13,6 +13,7 @@ export class SuperMan {
         this.soundSupermanLaser = document.querySelector('audio#sound-laserShot');
         this.soundSuperman.volume = 0.5;
         this.soundSupermanLaser.volume = 0.5;
+        this.soundSuperman.play();
 
         this.position = { x, y };
         this.velocity = { x: 0, y: 0 };
