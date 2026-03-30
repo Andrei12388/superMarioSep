@@ -5,13 +5,19 @@ import { playSound } from '../../soundHandler.js';
 import { gameState } from '../../state/gameState.js';
 
 export class Mario {
-    constructor(game) {
+    constructor(game, playerId = 0) {
         this.game = game;
+        this.playerId = playerId;
         this.soundJump = document.querySelector('audio#sound-jump');
          this.gameOver = document.querySelector('audio#music-gameOver');
 
         // --- Constants & initial state ---
         this.ground = 207;
+
+        // Position offset for player2
+        this.position = { x: 50 + playerId * 40, y: 200 };
+        this.direction = 1;
+
         this.maxSpeed = 1.1;
         this.acceleration = 0.1;
         this.friction = 0.1;
@@ -33,9 +39,7 @@ export class Mario {
         // --- ON GROUND FLAG ---
         this.onGround = false; // <-- property only, no method
 
-        this.direction = 1; // 1 = right, -1 = left
         this.velocity = { x: 0, y: 0 };
-        this.position = { x: 50, y: 20 };
 
         this.image = document.querySelector('img[alt="mario"]');
 
@@ -166,12 +170,12 @@ export class Mario {
 }
 
     handleIdleState() {
-        if (control.isHeavyKick(0) && this.onGround) { // <-- property
+        if (control.isHeavyKick(this.playerId) && this.onGround) { // <-- property
             this.velocity.y = -this.jumpForce;
             playSound(this.soundJump, 1)
-        } else if (control.isForward(0, 1)) {
+        } else if (control.isForward(this.playerId, 1)) {
             this.changeState(FighterState.WALK_FORWARD, this.isBig ? 'walk' : 'walkSmall');
-        } else if (control.isBackward(0, 1)) {
+        } else if (control.isBackward(this.playerId, 1)) {
             this.changeState(FighterState.WALK_BACKWARD, this.isBig ? 'walk' : 'walkSmall');
         }
     }
@@ -181,7 +185,7 @@ export class Mario {
     handleWalkBackwardInit() { this.direction = -1; this.currentAnimationKey = this.isBig ? 'walk' : 'walkSmall'; }
 
     handleWalkForwardState() {
-        const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);        if (isRunning) console.log('Running forward');        const currentMaxSpeed = isRunning ? 1.6 : this.maxSpeed;
+        const isRunning = control.isControlDown(this.playerId, Control.LIGHT_PUNCH) || control.isControlDown(this.playerId, Control.LIGHT_KICK);        if (isRunning) console.log('Running forward');        const currentMaxSpeed = isRunning ? 1.6 : this.maxSpeed;
         this.velocity.x = Math.min(this.velocity.x, currentMaxSpeed);
         this.position.x += this.velocity.x;
         // --- Horizontal collisions ---
@@ -215,8 +219,8 @@ export class Mario {
             }
         }
 
-        if (!control.isForward(0, 1)) this.changeState(FighterState.IDLE, this.isBig ? 'idle' : 'idleSmall');
-        if (control.isHeavyKick(0) && this.onGround) {
+        if (!control.isForward(this.playerId, 1)) this.changeState(FighterState.IDLE, this.isBig ? 'idle' : 'idleSmall');
+        if (control.isHeavyKick(this.playerId) && this.onGround) {
             playSound(this.soundJump, 1)
             const jumpForce = isRunning ? this.runJumpForce : this.jumpForce;
             this.velocity.y = -jumpForce;
@@ -224,7 +228,7 @@ export class Mario {
     }
 
     handleWalkBackwardState() {
-        const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);        if (isRunning) console.log('Running backward');        const currentMaxSpeed = isRunning ? 1.6 : this.maxSpeed;
+        const isRunning = control.isControlDown(this.playerId, Control.LIGHT_PUNCH) || control.isControlDown(this.playerId, Control.LIGHT_KICK);        if (isRunning) console.log('Running backward');        const currentMaxSpeed = isRunning ? 1.6 : this.maxSpeed;
         this.velocity.x = Math.max(this.velocity.x, -currentMaxSpeed);
         this.position.x += this.velocity.x;
         // --- Horizontal collisions ---
@@ -258,8 +262,8 @@ export class Mario {
             }
         }
 
-        if (!control.isBackward(0, 1)) this.changeState(FighterState.IDLE, this.isBig ? 'idle' : 'idleSmall');
-        if (control.isHeavyKick(0) && this.onGround){
+        if (!control.isBackward(this.playerId, 1)) this.changeState(FighterState.IDLE, this.isBig ? 'idle' : 'idleSmall');
+        if (control.isHeavyKick(this.playerId) && this.onGround){
             playSound(this.soundJump, 1)
             const jumpForce = isRunning ? this.runJumpForce : this.jumpForce;
             this.velocity.y = -jumpForce;
@@ -336,7 +340,7 @@ handleDeath(time) {
         this.die();
     }
     // --- Apply horizontal friction ALWAYS ---
-if (!control.isForward(0, 1) && !control.isBackward(0, 1)) {
+if (!control.isForward(this.playerId, 1) && !control.isBackward(this.playerId, 1)) {
     if (this.velocity.x > 0) {
         this.velocity.x -= this.friction;
         if (this.velocity.x < 0) this.velocity.x = 0;
@@ -346,12 +350,12 @@ if (!control.isForward(0, 1) && !control.isBackward(0, 1)) {
     }
 }
 // --- Horizontal input acceleration ---
-if (control.isForward(0, 1)) {
+if (control.isForward(this.playerId, 1)) {
     this.velocity.x += this.acceleration;
     this.direction = 1;
 }
 
-if (control.isBackward(0, 1)) {
+if (control.isBackward(this.playerId, 1)) {
     this.velocity.x -= this.acceleration;
     this.direction = -1;
 }
@@ -359,7 +363,9 @@ if (control.isBackward(0, 1)) {
 this.position.x += this.velocity.x;
 
 // Determine max speed based on running (holding low punch or low kick)
-const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);if (isRunning) console.log('Running (update clamp)');const maxSpeed = isRunning ? 1.6 : this.maxSpeed;
+const isRunning = control.isControlDown(this.playerId, Control.LIGHT_PUNCH) || control.isControlDown(this.playerId, Control.LIGHT_KICK);
+if (isRunning) console.log('Running (update clamp)');
+const maxSpeed = isRunning ? 1.6 : this.maxSpeed;
 
 // Clamp speed
 this.velocity.x = Math.max(-maxSpeed, Math.min(this.velocity.x, maxSpeed));

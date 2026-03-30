@@ -108,6 +108,7 @@ export const gameState = {
       lives: 0,
       time: 400,
       coins: 0,
+      players: 1,
     },
     world: 1,
     level: 1,

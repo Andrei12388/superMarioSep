@@ -26,7 +26,18 @@ export class MarioScene {
         this.onGround = false;
 
         this.stage = { x: 0, y: 0 };
-        this.mario = new Mario(this);
+        if(gameState.mario.players === 2){
+            this.players = [
+            new Mario(this, 0),
+            new Mario(this, 1)
+        ];
+        } else {
+            this.players = [
+            new Mario(this, 0),
+        ];
+        }
+        
+        this.mario = this.players[0];
 
         this.enemies = [
             new KapNino(this, 400, 150),
@@ -140,6 +151,10 @@ export class MarioScene {
         return { x, y, width: box.width, height: box.height };
     }
 
+    getPlayerPushBox(player) {
+        return this.getWorldBox(player.boxes.push, player);
+    }
+
     isColliding(a, b) {
         return (
             a.x < b.x + b.width &&
@@ -151,140 +166,199 @@ export class MarioScene {
 
     // --- ENTITY UPDATES ---
     updateEntities(time) {
-    // Update bricks
-    for (const brick of this.bricks) brick.update(time);
+        // Update bricks
+        for (const brick of this.bricks) brick.update(time);
 
-    // Reset Mario ground flag
-    this.mario.onGround = false;
-
-    const marioPush = this.mario.boxes.push;
-const marioHeadY = this.mario.position.y + marioPush.y;
-
-for (const brick of this.bricks) {
-    const brickBox = brick.getWorldBox();
-    const brickBottomY = brickBox.y + brickBox.height;
-    const isHorizontallyOverlapping =
-        marioPush.x + marioPush.width > brickBox.x &&
-        marioPush.x < brickBox.x + brickBox.width;
-
-    // HEADBUTT
-    if (this.mario.velocity.y < 0 &&
-        marioHeadY < brickBottomY &&
-        marioHeadY + marioPush.height > brickBox.y &&
-        isHorizontallyOverlapping
-    ) {
-        if (brick.type !== undefined && typeof brick.hit === 'function') {
-            brick.hit(); // secret block behavior
-        } else if (this.mario.isBig && typeof brick.break === 'function') {
-            brick.break();
-        } else if (!this.mario.isBig && typeof brick.bump === 'function') {
-            brick.bump();
+        // Reset player ground flags
+        for (const player of this.players) {
+            player.onGround = false;
         }
 
-        this.mario.velocity.y = 2;  // always bounce
-    }
+        // Brick colliders for each player
+        for (const brick of this.bricks) {
+            const brickBox = brick.getWorldBox();
+            const brickBottomY = brickBox.y + brickBox.height;
+            const brickTopY = brickBox.y;
 
-    // LANDING
-    const marioFeetY = this.mario.position.y + marioPush.y + marioPush.height;
-    const brickTopY = brickBox.y;
-    const landingTolerance = 5;
+            for (const player of this.players) {
+                const playerPush = player.boxes.push;
+                const playerHeadY = player.position.y + playerPush.y;
+                const playerFeetY = player.position.y + playerPush.y + playerPush.height;
+                const isHorizontallyOverlapping =
+                    player.position.x + playerPush.x + playerPush.width > brickBox.x &&
+                    player.position.x + playerPush.x < brickBox.x + brickBox.width;
 
-    if ((brick.isSolid || typeof brick.isBroken !== 'undefined') &&
-        this.mario.velocity.y >= 0 &&
-        marioFeetY <= brickTopY + landingTolerance &&
-        marioFeetY + this.mario.velocity.y >= brickTopY - landingTolerance &&
-        isHorizontallyOverlapping
-    ) {
-        this.mario.position.y = brickTopY - marioPush.height - marioPush.y;
-        this.mario.velocity.y = 0;
-        this.mario.onGround = true;
+                // HEADBUTT
+                if (player.velocity.y < 0 &&
+                    playerHeadY < brickBottomY &&
+                    playerHeadY + playerPush.height > brickBox.y &&
+                    isHorizontallyOverlapping
+                ) {
+                    if (brick.type !== undefined && typeof brick.hit === 'function') {
+                        brick.hit(); // secret block behavior
+                    } else if (player.isBig && typeof brick.break === 'function') {
+                        brick.break();
+                    } else if (!player.isBig && typeof brick.bump === 'function') {
+                        brick.bump();
+                    }
+
+                    player.velocity.y = 2;  // always bounce
+                }
+
+                // LANDING
+                const landingTolerance = 5;
+
+                if ((brick.isSolid || typeof brick.isBroken !== 'undefined') &&
+                    player.velocity.y >= 0 &&
+                    playerFeetY <= brickTopY + landingTolerance &&
+                    playerFeetY + player.velocity.y >= brickTopY - landingTolerance &&
+                    isHorizontallyOverlapping
+                ) {
+                    player.position.y = brickTopY - playerPush.height - playerPush.y;
+                    player.velocity.y = 0;
+                    player.onGround = true;
+                }
+            }
+        }
+
+        // Player vs player bumping (no damage/death from collisions)
+        for (let i = 0; i < this.players.length; i++) {
+            for (let j = i + 1; j < this.players.length; j++) {
+                const p1 = this.players[i];
+                const p2 = this.players[j];
+                if (p1.isDead || p2.isDead) continue;
+
+                const p1Box = this.getPlayerPushBox(p1);
+                const p2Box = this.getPlayerPushBox(p2);
+
+                if (!this.isColliding(p1Box, p2Box)) continue;
+
+                const overlapX = Math.min(p1Box.x + p1Box.width, p2Box.x + p2Box.width) - Math.max(p1Box.x, p2Box.x);
+                const overlapY = Math.min(p1Box.y + p1Box.height, p2Box.y + p2Box.height) - Math.max(p1Box.y, p2Box.y);
+
+                if (overlapX < overlapY) {
+                    const shift = overlapX / 2 + 0.5;
+                    if (p1.position.x < p2.position.x) {
+                        p1.position.x -= shift;
+                        p2.position.x += shift;
+                        p1.velocity.x = -Math.abs(p1.velocity.x * 0.3);
+                        p2.velocity.x = Math.abs(p2.velocity.x * 0.3);
+                    } else {
+                        p1.position.x += shift;
+                        p2.position.x -= shift;
+                        p1.velocity.x = Math.abs(p1.velocity.x * 0.3) * -1;
+                        p2.velocity.x = -Math.abs(p2.velocity.x * 0.3);
+                    }
+                } else {
+                    const shift = overlapY / 2 + 0.5;
+                    if (p1.position.y < p2.position.y) {
+                        p1.position.y -= shift;
+                        p2.position.y += shift;
+                        p1.velocity.y = Math.min(p1.velocity.y, -1);
+                        p2.velocity.y = Math.max(p2.velocity.y, 1);
+                    } else {
+                        p1.position.y += shift;
+                        p2.position.y -= shift;
+                        p1.velocity.y = Math.max(p1.velocity.y, 1);
+                        p2.velocity.y = Math.min(p2.velocity.y, -1);
+                    }
+                }
+            }
+        }
     }
-}
-}
 
     update(time) {
-        if(gameState.changeScene) this.game.setScene(new LevelTransition(this.game));;
-        this.mario.update(time);
+        if (gameState.changeScene) this.game.setScene(new LevelTransition(this.game));
 
-if (this.mario.isDead) return;
+        // Update players
+        for (const player of this.players) {
+            player.update(time);
+        }
+
+        // continue if at least one player alive
+        if (this.players.every(player => player.isDead)) return;
+
         // Initialize timer helpers (only once)
         this.scoreTexts.forEach(t => t.update(time));
-this.scoreTexts = this.scoreTexts.filter(t => !t.markedForDeletion);
-if (!this.timeCounter) this.timeCounter = 0;
+        this.scoreTexts = this.scoreTexts.filter(t => !t.markedForDeletion);
+        if (!this.timeCounter) this.timeCounter = 0;
 
-// Timer always updates
-this.timeCounter += time.secondsPassed;
-if (this.timeCounter >= 1) {
-    this.timeCounter -= 1;
-    if (gameState.mario.time > 0) {
-        gameState.mario.time--;
-    }
-}
+        // Timer always updates
+        this.timeCounter += time.secondsPassed;
+        if (this.timeCounter >= 1) {
+            this.timeCounter -= 1;
+            if (gameState.mario.time > 0) {
+                gameState.mario.time--;
+            }
+        }
 
-this.debris.forEach(d => d.update(time));
-this.debris = this.debris.filter(d => !d.markedForDeletion);
+        this.debris.forEach(d => d.update(time));
+        this.debris = this.debris.filter(d => !d.markedForDeletion);
+
         this.updateEntities(time);
-        
 
-        if (this.mario.currentState !== FighterState.GROW) {
+        // Enemy interactions for all players
         for (const enemy of this.enemies) {
             enemy.update(time);
 
-            const marioPush = this.getWorldBox(this.mario.boxes.push, this.mario);
-            const marioHurt = this.getWorldBox(this.mario.boxes.hurt, this.mario);
+            for (const player of this.players) {
+                    if (player.isDead) continue;
 
-            const enemyPush = this.getWorldBox(enemy.boxes.push, enemy);
-            const enemyHurt = this.getWorldBox(enemy.boxes.hurt, enemy);
+                    const playerPush = this.getWorldBox(player.boxes.push, player);
+                    const playerHurt = this.getWorldBox(player.boxes.hurt, player);
 
-            // STOMP
-            if (!enemy.isDead &&
-                this.isColliding(marioPush, enemyHurt) &&
-                this.mario.velocity.y > 0 &&
-                marioPush.y < enemyHurt.y
-            ) {
-                enemy.isDead = true;
-                enemy.changeState(FighterState.DIE, 'dead');
-                this.mario.velocity.y = -6;
-            }
+                    const enemyPush = this.getWorldBox(enemy.boxes.push, enemy);
+                    const enemyHurt = this.getWorldBox(enemy.boxes.hurt, enemy);
 
-            // DAMAGE
-            if (!enemy.isDead && this.isColliding(enemyPush, marioHurt) && !this.mario.isHurt) {
-                if (this.mario.isBig) {
-                    this.mario.changeState(FighterState.GROW, 'growSmall');
-                    playSound(this.soundPowerDown, 1);
-                    console.log("Mario shrunk to small!");
-                } else {
-                    this.mario.die();
-                    console.log("Mario died!");
+                    // STOMP
+                    if (!enemy.isDead &&
+                        this.isColliding(playerPush, enemyHurt) &&
+                        player.velocity.y > 0 &&
+                        playerPush.y < enemyHurt.y
+                    ) {
+                        enemy.isDead = true;
+                        enemy.changeState(FighterState.DIE, 'dead');
+                        player.velocity.y = -6;
+                    }
+
+                    // DAMAGE
+                    if (!enemy.isDead && this.isColliding(enemyPush, playerHurt) && !player.isHurt) {
+                        if (player.isBig) {
+                            player.changeState(FighterState.GROW, 'growSmall');
+                            playSound(this.soundPowerDown, 1);
+                            console.log("Mario shrunk to small!");
+                        } else {
+                            player.die();
+                            console.log("Mario died!");
+                        }
+
+                        player.isHurt = true;
+                        player.hurtTimer = 30;
+                        player.velocity.x = 3 * player.direction * -1;
+                        player.velocity.y -= 3;
+                    }
                 }
-
-                this.mario.isHurt = true;
-                this.mario.hurtTimer = 30;
-                this.mario.velocity.x = 3 * this.mario.direction * -1;
-                this.mario.velocity.y -= 3;
             }
-        }
-        }
+        
 
-        if (this.mario.currentState !== FighterState.GROW) {
-        // Stage scrolling
-        const canvasWidth = 200;
-        const stageWidth = this.frames.get('stage')[2];
-        const leftBoundary = canvasWidth / 3;
-        const rightBoundary = canvasWidth * 2 / 3;
+        // Stage scrolling (follow first active player)
+        var activePlayer = this.players.find(function(p) { return !p.isDead; }) || this.players[0];
+        var canvasWidth = 200;
+        var stageWidth = this.frames.get('stage')[2];
+        var leftBoundary = canvasWidth / 3;
+        var rightBoundary = canvasWidth * 2 / 3;
 
-        if (this.mario.position.x <= 5) this.mario.position.x = 5;
-        if (this.mario.position.x >= stageWidth - canvasWidth+100) this.mario.position.x = stageWidth - canvasWidth+100;
+        if (activePlayer.position.x <= 5) activePlayer.position.x = 5;
+        if (activePlayer.position.x >= stageWidth - canvasWidth + 100) activePlayer.position.x = stageWidth - canvasWidth + 100;
 
-        if (this.mario.position.x - this.stage.x < leftBoundary)
-            this.stage.x = this.mario.position.x - leftBoundary;
-        else if (this.mario.position.x - this.stage.x > rightBoundary)
-            this.stage.x = this.mario.position.x - rightBoundary;
+        if (activePlayer.position.x - this.stage.x < leftBoundary)
+            this.stage.x = activePlayer.position.x - leftBoundary;
+        else if (activePlayer.position.x - this.stage.x > rightBoundary)
+            this.stage.x = activePlayer.position.x - rightBoundary;
 
         if (this.stage.x < 0) this.stage.x = 0;
-        if (this.stage.x > stageWidth - canvasWidth-300)
-            this.stage.x = stageWidth - canvasWidth-300;
-        }
+        if (this.stage.x > stageWidth - canvasWidth - 300)
+            this.stage.x = stageWidth - canvasWidth - 300;
     }
 
     drawEntities(context) {
@@ -311,17 +385,20 @@ this.debris = this.debris.filter(d => !d.markedForDeletion);
         // Draw bricks behind Mario
         this.drawEntities(context);
 
-        // Draw Mario
-        this.mario.drawFrame(
-            context,
-            this.mario.position.x - this.stage.x,
-            this.mario.position.y - this.stage.y,
-            this.mario.direction
-        );
-       this.mario.drawDebug(context, this.stage);
-       this.debris.forEach(d => d.draw(context, this.stage));
-       this.scoreTexts.forEach(t => t.draw(context, this.stage));
-       drawText(context, this.imageUI, this.frames);
+        // Draw players
+        for (const player of this.players) {
+            player.drawFrame(
+                context,
+                player.position.x - this.stage.x,
+                player.position.y - this.stage.y,
+                player.direction
+            );
+            player.drawDebug(context, this.stage);
+        }
+
+        this.debris.forEach(d => d.draw(context, this.stage));
+        this.scoreTexts.forEach(t => t.draw(context, this.stage));
+        drawText(context, this.imageUI, this.frames);
      
     }
 }

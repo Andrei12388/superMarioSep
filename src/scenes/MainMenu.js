@@ -53,6 +53,8 @@ export class MainMenu {
             this.stageMusic.pause();
 
             const players = this.selection === 1 ? 2 : 1;
+            if(players === 2) gameState.mario.players = 2;
+            else gameState.mario.players = 1;
             this.game.setScene(new LevelTransition(this.game, {
                 players,
                 nextSceneClass: MarioScene
