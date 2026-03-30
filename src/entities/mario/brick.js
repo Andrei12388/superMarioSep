@@ -8,6 +8,7 @@ export class Brick {
         this.position = { x, y };
         this.velocity = { x: 0, y: 0 };
         this.soundBrick = document.querySelector('audio#sound-brick');
+         this.soundBump = document.querySelector('audio#sound-bump');
 
         this.image = document.querySelector('img[alt="mario"]');
 
@@ -51,7 +52,7 @@ export class Brick {
 
     this.isBroken = true;
     playSound(this.soundBrick, 1);
-    gameState.mario.score += 100;
+    gameState.mario.score += 50;
 
     // 4-piece explosion (classic Mario style)
     const pieces = [
@@ -81,7 +82,7 @@ export class Brick {
 
     bump() {
         if (this.isBroken || this.bouncing) return;
-
+        playSound(this.soundBump, 1);
         this.bouncing = true;
         this.bounceY = 0;
         this.bounceSpeed = -2;

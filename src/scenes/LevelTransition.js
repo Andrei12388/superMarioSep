@@ -8,6 +8,10 @@ export class LevelTransition {
     constructor(game, options = {}) {
         this.game = game;
         this.image = document.querySelector('img[alt="mario"]');
+        this.gameOverMusic = document.querySelector('audio#music-gameOverTransition');
+        if(gameState.mario.lives <= -1) {
+            this.gameOverMusic.play();
+        }
 
         this.frames = new Map([
             ['menu', [17, 182, 384, 224]],
@@ -33,6 +37,14 @@ export class LevelTransition {
 
         if (this.timer >= this.duration) {
             this.finished = true;
+            if(gameState.mario.lives <= -1) {
+                this.game.setScene(new MainMenu(this.game));
+                gameState.mario.lives = 2; // Reset lives for new game
+                gameState.mario.score = 0; // Reset score for new game
+                gameState.mario.coins = 0;
+                gameState.mario.time = 400;
+                return;
+            }
             const SceneClass = this.nextSceneClass || MarioScene;
             this.game.setScene(new SceneClass(this.game, {
                 players: this.players
@@ -61,13 +73,29 @@ export class LevelTransition {
         context.fillStyle = 'black';
         context.fillRect(0, 0, width, height);
 
-        drawText(context, this.image, this.frames);
+        if (gameState.mario.lives <= -1) {
+            context.fillStyle = 'white';        // 👈 important
+            context.font = "11px MarioFont";   // 👈 make it visible
+            context.textAlign = 'center';       // 👈 center horizontally
+            context.textBaseline = 'middle';    // 👈 center vertically
 
-       
+            context.fillText('Game Over!', width / 2, height / 2);
+            context.restore();
+
+             if (this.timer > this.duration - 1) {
+            const alpha = (this.timer - (this.duration - 1)) / 0.5;
+            context.fillStyle = `rgba(0,0,0,${Math.min(Math.max(alpha, 0), 1)})`;
+            context.fillRect(0, 0, width, height);
+        }
+
+            return;
+        }
+
+        drawText(context, this.image, this.frames);
         context.fillText(`World ${gameState.world}-${gameState.level}`, width/2-60, height/2-25);
-        this.drawFrame(context,`mario`, width/2-63, height/2);
-        context.fillText(`${this.players} Player${this.players > 1 ? 's' : ''}`, width/2+20, height/2+50);
-        context.fillText(` X ${gameState.mario.lives}`, width/2-28, height/2+20);
+        this.drawFrame(context,`mario`, width/2-60, height/2-5);
+       
+        context.fillText(` X ${gameState.mario.lives}`, width/2-25, height/2+20);
 
         // ✨ Fade out effect (last 0.5s)
         if (this.timer > this.duration - 1) {

@@ -11,6 +11,7 @@ export class MainMenu {
         this.game = game;
         this.image = document.querySelector('img[alt="mario"]');
         this.stageMusic = document.querySelector('audio#music-ground');
+         this.soundJump = document.querySelector('audio#sound-jump');
         this.soundPowerDown = document.querySelector('audio#sound-powerDown');
 
         this.frames = new Map([
@@ -41,8 +42,10 @@ export class MainMenu {
         // Handle input for selection
         if (control.isUp(0,1) && this.selection > 0) {
             this.selection--;
+            playSound(this.soundJump, 1)
         } else if (control.isDown(0,1) && this.selection < this.options.length - 1) {
             this.selection++;
+            playSound(this.soundJump, 1)
         }
 
         if(control.isStart(0,1) || control.isLightKick(0,1) || control.isHeavyKick(0,1) || control.isLightPunch(0,1) || control.isHeavyPunch(0,1)) {

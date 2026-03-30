@@ -2,6 +2,7 @@ import { FighterState, FrameDelay } from '../../constants/fighter.js';
 import * as control from '../../inputHandler.js';
 import { playSound } from '../../soundHandler.js';
 import { gameState } from '../../state/gameState.js';
+import { ScoreText } from './scoreText.js';
 
 export class KapNino {
     constructor(game, x, y) {
@@ -99,7 +100,14 @@ export class KapNino {
        // --- dead STATE ---
    handleDeadInit() {
     console.log("Dead enemy");
-   
+    this.game.scoreTexts.push(
+               new ScoreText(
+                   this.game,
+                   this.position.x+5,
+                   this.position.y,
+                   100
+               )
+           );
     playSound(this.soundDead, 1)
     playSound(this.soundKapDead, 1)
 

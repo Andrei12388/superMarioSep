@@ -332,6 +332,9 @@ handleDeath(time) {
     this.handleDeath(time);
     return; // stop ALL normal logic
 }
+    if(this.position.y > 275) {
+        this.die();
+    }
     // --- Apply horizontal friction ALWAYS ---
 if (!control.isForward(0, 1) && !control.isBackward(0, 1)) {
     if (this.velocity.x > 0) {
@@ -451,7 +454,7 @@ if (this.animationTimer >= 10) {
 }
 
     drawFrame(context, x, y, direction = 1, scale = 1, alpha = 1) {
-        if (this.isHurt && Math.floor(this.hurtTimer / 5) % 2 === 0) alpha = 0.3;
+        if (this.isHurt && !this.isDead && Math.floor(this.hurtTimer / 5) % 2 === 0) alpha = 0.3;
 
         const frames = this.frames.get(this.currentAnimationKey);
         if (!frames) return;

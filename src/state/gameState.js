@@ -105,7 +105,7 @@ export const gameState = {
 
     mario:{
       score: 0,
-      lives: 2,
+      lives: 0,
       time: 400,
       coins: 0,
     },
