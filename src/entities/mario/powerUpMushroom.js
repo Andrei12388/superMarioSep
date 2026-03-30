@@ -24,8 +24,8 @@ export class PowerUpMushRoom {
         this.life = 9999;
         // Collision boxes (like KapNino)
         this.boxes = {
-            push: { x: 0, y: 0, width: 16, height: 16 },
-            hurt: { x: 0, y: 0, width: 16, height: 16 },
+            push: { x: 0, y: 0, width: 10, height: 16 },
+            hurt: { x: 0, y: 0, width: 10, height: 16 },
         };
     }
 
@@ -104,9 +104,7 @@ export class PowerUpMushRoom {
 
         const mario = this.game.mario;
         if (!mario.isBig) {
-            mario.isBig = true;
-            mario.isPoweredUp = true;
-            mario.changeState(FighterState.IDLE, 'idle');
+            mario.changeState(FighterState.GROW, 'growBig');
             playSound(document.querySelector('audio#sound-powerUp'), 1);
         }
 

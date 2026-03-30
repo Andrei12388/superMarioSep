@@ -229,7 +229,7 @@ if (this.timeCounter >= 50) {
             // DAMAGE
             if (!enemy.isDead && this.isColliding(enemyPush, marioHurt) && !this.mario.isHurt) {
                 if (this.mario.isBig) {
-                    this.mario.shrink();
+                    this.mario.changeState(FighterState.GROW, 'growSmall');
                     playSound(this.soundPowerDown, 1);
                     console.log("Mario shrunk to small!");
                 } else {

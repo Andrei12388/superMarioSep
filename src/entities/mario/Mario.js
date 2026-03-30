@@ -1,4 +1,5 @@
 import { FighterState, FrameDelay } from '../../constants/fighter.js';
+import { Control } from '../../constants/control.js';
 import * as control from '../../inputHandler.js';
 import { playSound } from '../../soundHandler.js';
 
@@ -33,7 +34,9 @@ export class Mario {
 
         // --- Animation & frames ---
         this.frames = new Map([
-            ['idleSmall', [[[131, 63, 31, 30], [15, 28], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }]]],
+            ['idleSmall', [
+                [[131, 63, 31, 30], [15, 28], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }]
+            ]],
             ['walkSmall', [
                 [[2, 61, 37, 35], [19, 33], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }],
                 [[45, 62, 29, 35], [15, 33], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }],
@@ -42,14 +45,30 @@ export class Mario {
                 [[87, 63, 29, 33], [15, 31], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }],
                 [[45, 62, 29, 35], [15, 33], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }]
             ]],
-            ['idle', [[[2, 1, 37, 49], [19, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]]],
+            ['idle', [
+                [[2, 1, 37, 49], [19, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]
+            ]],
             ['walk', [
                 [[2, 1, 37, 49], [19, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
                 [[50, 2, 29, 50], [15, 48], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
                 [[92, 4, 29, 47], [15, 45], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
                 [[136, 4, 31, 44], [15, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]
             ]],
-            ['getUp-1', [[[11, 955, 53, 55], [27, 53], { push: [-20, -50, 36, 46], hurt: [0, -500, 0, 0] }]]]
+            ['getUp-1', [
+                [[11, 955, 53, 55], [27, 53], { push: [-20, -50, 36, 46], hurt: [0, -500, 0, 0] }]
+            ]],
+            ['growBig', [
+                [[2, 1, 37, 49], [19, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[131, 63, 31, 30], [15, 28], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }],
+                [[2, 1, 37, 49], [19, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[131, 63, 31, 30], [15, 28], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }]
+            ]],
+            ['growSmall', [
+                [[2, 1, 37, 49], [19, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[131, 63, 31, 30], [15, 28], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }],
+                [[2, 1, 37, 49], [19, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[131, 63, 31, 30], [15, 28], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }]
+            ]]
         ]);
 
         this.currentAnimationKey = 'idleSmall';
@@ -67,6 +86,11 @@ export class Mario {
             [FighterState.IDLE]: {
                 init: this.handleIdleInit.bind(this),
                 update: this.handleIdleState.bind(this),
+                validFrom: [undefined, FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALK_BACKWARD, FighterState.GROW]
+            },
+            [FighterState.GROW]: {
+                init: this.handleGrowInit.bind(this),
+                update: this.handleGrowState.bind(this),
                 validFrom: [undefined, FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALK_BACKWARD]
             },
             [FighterState.WALK_FORWARD]: {
@@ -107,6 +131,29 @@ export class Mario {
        // this.resetVelocities();
         this.currentAnimationKey = this.isBig ? 'idle' : 'idleSmall';
     }
+    handleGrowInit() {
+        this.resetVelocities();
+        this.currentAnimationKey = this.isBig ? 'growSmall' : 'growBig';
+    }
+
+  handleGrowState() {
+    const frames = this.frames.get(this.currentAnimationKey);
+
+    // Wait until LAST FRAME (not frame 1)
+    if (this.animationFrame === frames.length - 1) {
+        if (this.currentAnimationKey === 'growBig') {
+            this.isBig = true;
+            this.isPoweredUp = true;
+            this.changeState(FighterState.IDLE, 'idle');
+        }
+
+        if (this.currentAnimationKey === 'growSmall') {
+            this.isBig = false;
+            this.isPoweredUp = false;
+            this.changeState(FighterState.IDLE, 'idleSmall');
+        }
+    }
+}
 
     handleIdleState() {
         if (control.isHeavyKick(0) && this.onGround) { // <-- property
@@ -124,7 +171,8 @@ export class Mario {
     handleWalkBackwardInit() { this.direction = -1; this.currentAnimationKey = this.isBig ? 'walk' : 'walkSmall'; }
 
     handleWalkForwardState() {
-        this.velocity.x = Math.min(this.velocity.x, this.maxSpeed);
+        const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);        if (isRunning) console.log('Running forward');        const currentMaxSpeed = isRunning ? 2.0 : this.maxSpeed;
+        this.velocity.x = Math.min(this.velocity.x, currentMaxSpeed);
         this.position.x += this.velocity.x;
         // --- Horizontal collisions ---
         for (const brick of this.game.bricks) {
@@ -160,12 +208,14 @@ export class Mario {
         if (!control.isForward(0, 1)) this.changeState(FighterState.IDLE, this.isBig ? 'idle' : 'idleSmall');
         if (control.isHeavyKick(0) && this.onGround) {
             playSound(this.soundJump, 1)
-            this.velocity.y = -this.runJumpForce;
+            const jumpForce = isRunning ? this.runJumpForce : this.jumpForce;
+            this.velocity.y = -jumpForce;
         }
     }
 
     handleWalkBackwardState() {
-        this.velocity.x = Math.max(this.velocity.x, -this.maxSpeed);
+        const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);        if (isRunning) console.log('Running backward');        const currentMaxSpeed = isRunning ? 2.0 : this.maxSpeed;
+        this.velocity.x = Math.max(this.velocity.x, -currentMaxSpeed);
         this.position.x += this.velocity.x;
         // --- Horizontal collisions ---
         for (const brick of this.game.bricks) {
@@ -201,7 +251,8 @@ export class Mario {
         if (!control.isBackward(0, 1)) this.changeState(FighterState.IDLE, this.isBig ? 'idle' : 'idleSmall');
         if (control.isHeavyKick(0) && this.onGround){
             playSound(this.soundJump, 1)
-            this.velocity.y = -this.runJumpForce;
+            const jumpForce = isRunning ? this.runJumpForce : this.jumpForce;
+            this.velocity.y = -jumpForce;
         } 
     }
 
@@ -265,8 +316,11 @@ if (control.isBackward(0, 1)) {
 
 this.position.x += this.velocity.x;
 
+// Determine max speed based on running (holding low punch or low kick)
+const isRunning = control.isControlDown(0, Control.LIGHT_PUNCH) || control.isControlDown(0, Control.LIGHT_KICK);if (isRunning) console.log('Running (update clamp)');const maxSpeed = isRunning ? 2.0 : this.maxSpeed;
+
 // Clamp speed
-this.velocity.x = Math.max(-this.maxSpeed, Math.min(this.velocity.x, this.maxSpeed));
+this.velocity.x = Math.max(-maxSpeed, Math.min(this.velocity.x, maxSpeed));
     if (this.isHurt) {
         this.hurtTimer--;
         if (this.hurtTimer <= 0) this.isHurt = false;
@@ -327,12 +381,27 @@ for (const brick of this.game.bricks) {
     // --- Update collision boxes ---
     this.updateBoxes();
 
-    // --- Animate ---
-    this.animationTimer += 1;
-    if (this.animationTimer >= 10) {
-        this.animationFrame = (this.animationFrame + 1) % this.frames.get(this.currentAnimationKey).length;
-        this.animationTimer = 0;
+   // --- Animate ---
+this.animationTimer += 1;
+
+const frames = this.frames.get(this.currentAnimationKey);
+if (!frames) return;
+
+if (this.animationTimer >= 10) {
+    this.animationTimer = 0;
+
+    // Grow/Shrink should NOT loop
+    if (this.currentState === FighterState.GROW) {
+        if (this.animationFrame < frames.length - 1) {
+            this.animationFrame++;
+        } else {
+            // Animation finished → let state handle it
+        }
+    } else {
+        // Normal looping animations
+        this.animationFrame = (this.animationFrame + 1) % frames.length;
     }
+}
 }
 
     drawFrame(context, x, y, direction = 1, scale = 1, alpha = 1) {

@@ -95,6 +95,7 @@ function handleKeyUp(event) {
   holdTimer = 0;
   tapped = true;
   event.preventDefault();
+  console.log('Key released:', event.code);
   heldKeys.delete(event.code);
   sendInput(event.code, 'up');
   pressedKeys.delete(event.code);
@@ -176,7 +177,7 @@ export function pollGamepads() {
         gamepadPressed.set(key, false);
         gameState.buttonHold = false;
         controlHold.tapped = false;
-         console.log("Gamepad RELEASE", padId, idx);
+        console.log("Gamepad RELEASE", padId, idx);
       }
     });
   }
@@ -222,6 +223,7 @@ export function registerScreenButtonEvents() {
         gameState.buttonHold = false;
         controlHold.tapped = false;
         holdTimer = 0;
+        console.log('Button released:', virtualKeyCode);
         heldKeys.delete(virtualKeyCode);
         sendInput(virtualKeyCode, 'up');
         pressedKeys.delete(virtualKeyCode);
