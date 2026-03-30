@@ -109,7 +109,10 @@ export class MarioScene {
 
         ];
 
-        this.frames = new Map([['stage', [5, 0, 3584, 480]]]);
+        this.frames = new Map([
+            ['stage', [5, 0, 3584, 480]],
+            ['coin',[194, 150, 14, 15]],
+        ]);
     }
 
     drawFrame(context, frameKey, x, y, direction = 1, scale = 1, alpha = 1) {
@@ -286,6 +289,8 @@ if (this.timeCounter >= 50) {
         context.fillText("Mario-Sep", 20, 20);
         context.fillText("World", 224, 20);
         context.fillText("Time", 304, 20);
+        context.fillText("x00", 158, 32);
+        this.drawFrame(context, 'coin', 140, 19);
 
         context.fillText(String(gameState.mario.score).padStart(6, '0'), 20, 32);
         context.fillText("1-1", 234, 32);

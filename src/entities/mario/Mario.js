@@ -134,7 +134,7 @@ export class Mario {
         this.currentAnimationKey = this.isBig ? 'idle' : 'idleSmall';
     }
     handleGrowInit() {
-        this.resetVelocities();
+        
         this.alpha = 0.5;
         this.currentAnimationKey = this.isBig ? 'growSmall' : 'growBig';
     }
