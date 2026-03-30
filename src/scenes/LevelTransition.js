@@ -19,6 +19,7 @@ export class LevelTransition {
             ['coin',[194, 150, 14, 15]],
             ['mario',[131, 63, 31, 32]],
         ]);
+        gameState.mario.time = 400;
 
         this.timer = 0;
         this.duration = 4; // 3 seconds

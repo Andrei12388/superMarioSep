@@ -1,9 +1,11 @@
 import { FighterState } from '../constants/fighter.js';
 import { Brick } from '../entities/mario/brick.js';
+import { CloudEnemy } from '../entities/mario/cloudEnemy.js';
 import { Ground } from '../entities/mario/ground.js';
 import { KapNino } from '../entities/mario/KapNino.js';
 import { Mario } from '../entities/mario/Mario.js';
 import { SecretBlock } from '../entities/mario/secretBlock.js';
+import { SuperMan } from '../entities/mario/superMan.js';
 import * as control from '../inputHandler.js';
 import { playSound } from '../soundHandler.js';
 import { gameState } from '../state/gameState.js';
@@ -18,6 +20,7 @@ export class MarioScene {
         this.imageUI = document.querySelector('img[alt="mario"]');
         this.stageMusic = document.querySelector('audio#music-ground');
         this.stageMusic.currentTime = 0;
+        gameState.mario.time = 400;
        
         this.soundPowerDown = document.querySelector('audio#sound-powerDown');
         this.debris = [];
@@ -42,6 +45,8 @@ export class MarioScene {
         this.enemies = [
             new KapNino(this, 400, 150),
             new KapNino(this, 440, 150),
+            new CloudEnemy(this, 470, 150),
+            new SuperMan(this, 300, 50),
         ];
 
         this.bricks = [
@@ -297,9 +302,13 @@ export class MarioScene {
 
         this.updateEntities(time);
 
+        this.enemies = this.enemies.filter(e => !e.remove);
+
         // Enemy interactions for all players
         for (const enemy of this.enemies) {
+            if (!enemy.boxes) continue;
             enemy.update(time);
+
 
             for (const player of this.players) {
                     if (player.isDead) continue;
@@ -374,7 +383,7 @@ export class MarioScene {
                 enemy.position.y - this.stage.y,
                 enemy.direction
             );
-            enemy.drawDebug(context, this.stage);
+            enemy.drawDebug?.(context, this.stage);
         }
     }
 

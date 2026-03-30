@@ -113,6 +113,7 @@ export class PowerUpMushRoom {
         this.game.debris.push(
             new ScoreText(this.game, this.position.x, this.position.y, 1000)
         );
+        gameState.mario.score += 1000;
     }
 }
 
