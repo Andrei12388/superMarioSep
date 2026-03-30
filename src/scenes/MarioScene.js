@@ -228,12 +228,19 @@ if (this.timeCounter >= 50) {
 
             // DAMAGE
             if (!enemy.isDead && this.isColliding(enemyPush, marioHurt) && !this.mario.isHurt) {
+                if (this.mario.isBig) {
+                    this.mario.shrink();
+                    playSound(this.soundPowerDown, 1);
+                    console.log("Mario shrunk to small!");
+                } else {
+                    this.mario.die();
+                    console.log("Mario died!");
+                }
+
                 this.mario.isHurt = true;
                 this.mario.hurtTimer = 30;
                 this.mario.velocity.x = 3 * this.mario.direction * -1;
                 this.mario.velocity.y -= 3;
-                console.log("Mario damaged!");
-                playSound(this.soundPowerDown,1)
             }
         }
 
@@ -244,6 +251,7 @@ if (this.timeCounter >= 50) {
         const rightBoundary = canvasWidth * 2 / 3;
 
         if (this.mario.position.x <= 5) this.mario.position.x = 5;
+        if (this.mario.position.x >= stageWidth - canvasWidth+100) this.mario.position.x = stageWidth - canvasWidth+100;
 
         if (this.mario.position.x - this.stage.x < leftBoundary)
             this.stage.x = this.mario.position.x - leftBoundary;
@@ -251,8 +259,8 @@ if (this.timeCounter >= 50) {
             this.stage.x = this.mario.position.x - rightBoundary;
 
         if (this.stage.x < 0) this.stage.x = 0;
-        if (this.stage.x > stageWidth - canvasWidth)
-            this.stage.x = stageWidth - canvasWidth;
+        if (this.stage.x > stageWidth - canvasWidth-300)
+            this.stage.x = stageWidth - canvasWidth-300;
     }
 
     drawEntities(context) {

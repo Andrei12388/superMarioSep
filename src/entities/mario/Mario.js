@@ -14,7 +14,11 @@ export class Mario {
         this.acceleration = 0.1;
         this.friction = 0.1;
         this.gravity = 0.5;
-        this.jumpForce = 10;
+        this.jumpForce = 9;
+        this.runJumpForce = 10; // running jump boost
+        this.isBig = false;
+        this.isPoweredUp = false;
+        this.lives = 2;
         this.isHurt = false;
         this.hurtTimer = 0;
 
@@ -29,21 +33,21 @@ export class Mario {
 
         // --- Animation & frames ---
         this.frames = new Map([
-            ['idleSmall', [[[131, 63, 31, 30], [15, 28], { push: [-10, -30, 20, 30], hurt: [-10, -30, 20, 30] }]]],
+            ['idleSmall', [[[131, 63, 31, 30], [15, 28], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }]]],
             ['walkSmall', [
-                [[2, 61, 37, 35], [19, 33], { push: [-10, -30, 20, 30], hurt: [-10, -30, 20, 30] }],
-                [[45, 62, 29, 35], [15, 33], { push: [-10, -30, 20, 30], hurt: [-10, -30, 20, 30] }],
-                [[87, 63, 29, 33], [15, 31], { push: [-10, -30, 20, 30], hurt: [-10, -30, 20, 30] }],
-                [[131, 63, 31, 30], [15, 28], { push: [-10, -30, 20, 30], hurt: [-10, -30, 20, 30] }],
-                [[87, 63, 29, 33], [15, 31], { push: [-10, -30, 20, 30], hurt: [-10, -30, 20, 30] }],
-                [[45, 62, 29, 35], [15, 33], { push: [-10, -30, 20, 30], hurt: [-10, -30, 20, 30] }]
+                [[2, 61, 37, 35], [19, 33], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }],
+                [[45, 62, 29, 35], [15, 33], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }],
+                [[87, 63, 29, 33], [15, 31], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }],
+                [[131, 63, 31, 30], [15, 28], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }],
+                [[87, 63, 29, 33], [15, 31], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }],
+                [[45, 62, 29, 35], [15, 33], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }]
             ]],
-            ['idle', [[[2, 1, 37, 49], [19, 47], { push: [-10, -49, 20, 49], hurt: [-10, -49, 20, 49] }]]],
+            ['idle', [[[2, 1, 37, 49], [19, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]]],
             ['walk', [
-                [[2, 1, 37, 49], [19, 47], { push: [-10, -49, 20, 49], hurt: [-10, -49, 20, 49] }],
-                [[50, 2, 29, 50], [15, 48], { push: [-10, -49, 20, 49], hurt: [-10, -49, 20, 49] }],
-                [[92, 4, 29, 47], [15, 45], { push: [-10, -49, 20, 49], hurt: [-10, -49, 20, 49] }],
-                [[136, 4, 31, 44], [15, 42], { push: [-10, -49, 20, 49], hurt: [-10, -49, 20, 49] }]
+                [[2, 1, 37, 49], [19, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[50, 2, 29, 50], [15, 48], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[92, 4, 29, 47], [15, 45], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[136, 4, 31, 44], [15, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]
             ]],
             ['getUp-1', [[[11, 955, 53, 55], [27, 53], { push: [-20, -50, 36, 46], hurt: [0, -500, 0, 0] }]]]
         ]);
@@ -101,106 +105,103 @@ export class Mario {
     // --- IDLE STATE ---
     handleIdleInit() {
        // this.resetVelocities();
-        this.currentAnimationKey = 'idleSmall';
+        this.currentAnimationKey = this.isBig ? 'idle' : 'idleSmall';
     }
 
     handleIdleState() {
-        
         if (control.isHeavyKick(0) && this.onGround) { // <-- property
             this.velocity.y = -this.jumpForce;
-             playSound(this.soundJump, 1)
+            playSound(this.soundJump, 1)
         } else if (control.isForward(0, 1)) {
-            this.changeState(FighterState.WALK_FORWARD, 'walkSmall');
+            this.changeState(FighterState.WALK_FORWARD, this.isBig ? 'walk' : 'walkSmall');
         } else if (control.isBackward(0, 1)) {
-            this.changeState(FighterState.WALK_BACKWARD, 'walkSmall');
+            this.changeState(FighterState.WALK_BACKWARD, this.isBig ? 'walk' : 'walkSmall');
         }
     }
 
     // --- WALK STATES ---
-    handleWalkForwardInit() { this.direction = 1; this.currentAnimationKey = 'walkSmall'; }
-    handleWalkBackwardInit() { this.direction = -1; this.currentAnimationKey = 'walkSmall'; }
+    handleWalkForwardInit() { this.direction = 1; this.currentAnimationKey = this.isBig ? 'walk' : 'walkSmall'; }
+    handleWalkBackwardInit() { this.direction = -1; this.currentAnimationKey = this.isBig ? 'walk' : 'walkSmall'; }
 
     handleWalkForwardState() {
-       
         this.velocity.x = Math.min(this.velocity.x, this.maxSpeed);
         this.position.x += this.velocity.x;
         // --- Horizontal collisions ---
-for (const brick of this.game.bricks) {
-    if (brick.isBroken) continue;
+        for (const brick of this.game.bricks) {
+            if (brick.isBroken) continue;
 
-    const brickBox = brick.getWorldBox();
-    const pushBox = {
-        x: this.position.x + this.boxes.push.x,
-        y: this.position.y + this.boxes.push.y,
-        width: this.boxes.push.width,
-        height: this.boxes.push.height,
-    };
+            const brickBox = brick.getWorldBox();
+            const pushBox = {
+                x: this.position.x + this.boxes.push.x,
+                y: this.position.y + this.boxes.push.y,
+                width: this.boxes.push.width,
+                height: this.boxes.push.height,
+            };
 
-    // Only check horizontal collisions if vertically overlapping
-    const verticallyOverlapping =
-        pushBox.y + pushBox.height > brickBox.y &&
-        pushBox.y < brickBox.y + brickBox.height;
+            // Only check horizontal collisions if vertically overlapping
+            const verticallyOverlapping =
+                pushBox.y + pushBox.height > brickBox.y &&
+                pushBox.y < brickBox.y + brickBox.height;
 
-    if (!verticallyOverlapping) continue;
+            if (!verticallyOverlapping) continue;
 
-    // Moving right into a brick
-    if (this.velocity.x > 0 && pushBox.x + pushBox.width > brickBox.x && pushBox.x < brickBox.x) {
-        this.position.x = brickBox.x - pushBox.width - this.boxes.push.x;
-        this.velocity.x = 0;
-    }
-    // Moving left into a brick
-    else if (this.velocity.x < 0 && pushBox.x < brickBox.x + brickBox.width && pushBox.x + pushBox.width > brickBox.x + brickBox.width) {
-        this.position.x = brickBox.x + brickBox.width - this.boxes.push.x;
-        this.velocity.x = 0;
-    }
-}
+            // Moving right into a brick
+            if (this.velocity.x > 0 && pushBox.x + pushBox.width > brickBox.x && pushBox.x < brickBox.x) {
+                this.position.x = brickBox.x - pushBox.width - this.boxes.push.x;
+                this.velocity.x = 0;
+            }
+            // Moving left into a brick
+            else if (this.velocity.x < 0 && pushBox.x < brickBox.x + brickBox.width && pushBox.x + pushBox.width > brickBox.x + brickBox.width) {
+                this.position.x = brickBox.x + brickBox.width - this.boxes.push.x;
+                this.velocity.x = 0;
+            }
+        }
 
-        if (!control.isForward(0, 1)) this.changeState(FighterState.IDLE, 'idleSmall');
+        if (!control.isForward(0, 1)) this.changeState(FighterState.IDLE, this.isBig ? 'idle' : 'idleSmall');
         if (control.isHeavyKick(0) && this.onGround) {
-           playSound(this.soundJump, 1)
-            this.velocity.y = -this.jumpForce;
+            playSound(this.soundJump, 1)
+            this.velocity.y = -this.runJumpForce;
         }
     }
 
     handleWalkBackwardState() {
-      
         this.velocity.x = Math.max(this.velocity.x, -this.maxSpeed);
         this.position.x += this.velocity.x;
         // --- Horizontal collisions ---
-for (const brick of this.game.bricks) {
-    if (brick.isBroken) continue;
+        for (const brick of this.game.bricks) {
+            if (brick.isBroken) continue;
 
-    const brickBox = brick.getWorldBox();
-    const pushBox = {
-        x: this.position.x + this.boxes.push.x,
-        y: this.position.y + this.boxes.push.y,
-        width: this.boxes.push.width,
-        height: this.boxes.push.height,
-    };
+            const brickBox = brick.getWorldBox();
+            const pushBox = {
+                x: this.position.x + this.boxes.push.x,
+                y: this.position.y + this.boxes.push.y,
+                width: this.boxes.push.width,
+                height: this.boxes.push.height,
+            };
 
-    // Only check horizontal collisions if vertically overlapping
-    const verticallyOverlapping =
-        pushBox.y + pushBox.height > brickBox.y &&
-        pushBox.y < brickBox.y + brickBox.height;
+            // Only check horizontal collisions if vertically overlapping
+            const verticallyOverlapping =
+                pushBox.y + pushBox.height > brickBox.y &&
+                pushBox.y < brickBox.y + brickBox.height;
 
-    if (!verticallyOverlapping) continue;
+            if (!verticallyOverlapping) continue;
 
-    // Moving right into a brick
-    if (this.velocity.x > 0 && pushBox.x + pushBox.width > brickBox.x && pushBox.x < brickBox.x) {
-        this.position.x = brickBox.x - pushBox.width - this.boxes.push.x;
-        this.velocity.x = 0;
-    }
-    // Moving left into a brick
-    else if (this.velocity.x < 0 && pushBox.x < brickBox.x + brickBox.width && pushBox.x + pushBox.width > brickBox.x + brickBox.width) {
-        this.position.x = brickBox.x + brickBox.width - this.boxes.push.x;
-        this.velocity.x = 0;
-    }
-}
+            // Moving right into a brick
+            if (this.velocity.x > 0 && pushBox.x + pushBox.width > brickBox.x && pushBox.x < brickBox.x) {
+                this.position.x = brickBox.x - pushBox.width - this.boxes.push.x;
+                this.velocity.x = 0;
+            }
+            // Moving left into a brick
+            else if (this.velocity.x < 0 && pushBox.x < brickBox.x + brickBox.width && pushBox.x + pushBox.width > brickBox.x + brickBox.width) {
+                this.position.x = brickBox.x + brickBox.width - this.boxes.push.x;
+                this.velocity.x = 0;
+            }
+        }
 
-        if (!control.isBackward(0, 1)) this.changeState(FighterState.IDLE, 'idleSmall');
+        if (!control.isBackward(0, 1)) this.changeState(FighterState.IDLE, this.isBig ? 'idle' : 'idleSmall');
         if (control.isHeavyKick(0) && this.onGround){
             playSound(this.soundJump, 1)
-            this.velocity.y = -this.jumpForce;
+            this.velocity.y = -this.runJumpForce;
         } 
     }
 
@@ -382,5 +383,26 @@ for (const brick of this.game.bricks) {
     resetVelocities() {
         this.velocity.x = 0;
         this.velocity.y = 0;
+    }
+
+    powerUp() {
+        this.isBig = true;
+        this.isPoweredUp = true;
+        this.changeState(FighterState.IDLE, 'idle');
+    }
+
+    shrink() {
+        this.isBig = false;
+        this.isPoweredUp = false;
+        this.changeState(FighterState.IDLE, 'idleSmall');
+    }
+
+    die() {
+        this.lives = Math.max(0, this.lives - 1);
+        this.isHurt = false;
+        this.hurtTimer = 0;
+        this.velocity = { x: 0, y: 0 };
+        this.position = { x: 50, y: 20 };
+        this.changeState(FighterState.IDLE, this.isBig ? 'idle' : 'idleSmall');
     }
 }

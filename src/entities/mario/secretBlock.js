@@ -114,13 +114,14 @@ spawnPowerUp() {
             powerUp = new PowerUpMushRoom(
                 this.game,
                 this.position.x,
-                this.position.y - 100 // pop above the block
+                this.position.y - 16, // at top of the block
+                this
             );
             break;
-
-        // You can add more power-ups here
-        // case 'flower': ...
-        // case 'star': ...
+        
+        default:
+            console.warn('Unknown powerup type:', this.config.power);
+            break;
     }
 
     if (powerUp) {

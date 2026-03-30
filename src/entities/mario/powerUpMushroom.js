@@ -4,8 +4,9 @@ import { gameState } from '../../state/gameState.js';
 import { ScoreText } from "./scoreText.js";
 
 export class PowerUpMushRoom {
-    constructor(game, x, y) {
+    constructor(game, x, y, sourceBlock = null) {
         this.game = game;
+        this.sourceBlock = sourceBlock;
 
         // Position & physics
         this.position = { x, y };
@@ -49,7 +50,6 @@ export class PowerUpMushRoom {
 
     // --- Collision with bricks / ground ---
     for (const brick of this.game.bricks) {
-        // Ignore blocks that are marked as secret AND at spawn position
         const brickBox = brick.getWorldBox();
         const pushBox = this.getWorldBox();
 
@@ -72,12 +72,15 @@ export class PowerUpMushRoom {
         }
 
         // HORIZONTAL collision → flip direction
-        const hittingLeftWall = this.direction > 0 && mushroomRight > brickBox.x && mushroomLeft < brickBox.x;
-        const hittingRightWall = this.direction < 0 && mushroomLeft < brickBox.x + brickBox.width && mushroomRight > brickBox.x + brickBox.width;
+        // require vertical overlap to avoid immediate flip when on top of the block
+        const verticalOverlap = mushroomTop < brickBox.y + brickBox.height && mushroomBottom > brickBox.y;
 
-        if (hittingLeftWall || hittingRightWall) {
+        const hittingLeftWall = verticalOverlap && this.direction > 0 && mushroomRight > brickBox.x && mushroomLeft < brickBox.x;
+        const hittingRightWall = verticalOverlap && this.direction < 0 && mushroomLeft < brickBox.x + brickBox.width && mushroomRight > brickBox.x + brickBox.width;
+
+        if ((hittingLeftWall || hittingRightWall) && this.onGround) {
             this.direction *= -1;
-            this.position.x += this.direction * this.velocity.x; // push away to prevent sticking
+            this.position.x += this.direction * Math.abs(this.velocity.x); // push away to prevent sticking
         }
     }
 
@@ -98,8 +101,16 @@ export class PowerUpMushRoom {
 
     if (isColliding) {
         this.markedForDeletion = true;
+
+        const mario = this.game.mario;
+        if (!mario.isBig) {
+            mario.isBig = true;
+            mario.isPoweredUp = true;
+            mario.changeState(FighterState.IDLE, 'idle');
+            playSound(document.querySelector('audio#sound-powerUp'), 1);
+        }
+
         gameState.mario.poweredUp = true;
-        playSound(document.querySelector('audio#sound-powerUp'), 1);
 
         this.game.debris.push(
             new ScoreText(this.game, this.position.x, this.position.y, 1000)
