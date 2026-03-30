@@ -107,5 +107,6 @@ export const gameState = {
       score: 0,
       lives: 2,
       time: 400,
+      coins: 0,
     }
 };

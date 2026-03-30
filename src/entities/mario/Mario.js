@@ -375,7 +375,14 @@ for (const brick of this.game.bricks) {
     if (this.velocity.y < 0 && marioHeadY <= brickBottomY && marioHeadY >= brickBottomY + this.velocity.y && horizontallyOverlapping) {
         this.position.y = brickBottomY - this.boxes.push.y;
         this.velocity.y = 2; // bounce down
-        brick.break();
+
+        if (brick.type !== undefined && typeof brick.hit === 'function') {
+            brick.hit(); // secret block behavior
+        } else if (this.isBig && typeof brick.break === 'function') {
+            brick.break();
+        } else if (!this.isBig && typeof brick.bump === 'function') {
+            brick.bump();
+        }
     }
 }
 

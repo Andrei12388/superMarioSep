@@ -2,6 +2,7 @@ import * as control from '../inputHandler.js';
 import { playSound } from '../soundHandler.js';
 import { gameState } from '../state/gameState.js';
 import { MarioScene } from './MarioScene.js';
+import { drawText } from '../utils/UIHandler.js';
 
 export class MainMenu {
     constructor(game) {
@@ -42,7 +43,7 @@ export class MainMenu {
             this.selection++;
         }
 
-        if(control.isStart(0,1)) {
+        if(control.isStart(0,1) || control.isLightKick(0,1) || control.isHeavyKick(0,1) || control.isLightPunch(0,1) || control.isHeavyPunch(0,1)) {
             playSound(this.soundPowerDown, 1);
             this.stageMusic.pause();
             // Transition to character select or next scene
@@ -52,24 +53,6 @@ export class MainMenu {
         // Update kapHead position based on selection
         this.kapHeadPos.x = this.options[this.selection].x - 20; // Offset to the left of the text
         this.kapHeadPos.y = this.options[this.selection].y - 13; // Align with text
-    }
-
-     drawText(context){
-        context.font = "11px MarioFont";
-        context.fillStyle = "white";
-        context.fillText("Mario-Sep", 20, 20);
-        context.fillText("World", 224, 20);
-        context.fillText("Time", 304, 20);
-        context.fillText("x00", 158, 32);
-        this.drawFrame(context, 'coin', 140, 19);
-
-        context.fillText(String(gameState.mario.score).padStart(6, '0'), 20, 32);
-        context.fillText("1-1", 234, 32);
-        context.fillText(
-        String(gameState.mario.time).padStart(3, '0'),
-            314,
-            32
-        );
     }
 
     draw(context) {
@@ -85,6 +68,6 @@ export class MainMenu {
         this.options.forEach((option, index) => {
             context.fillText(option.label, option.x, option.y);
         });
-        this.drawText(context);
+        drawText(context, this.image, this.frames);
     }
 }

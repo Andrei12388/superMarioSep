@@ -1,3 +1,4 @@
+import { gameState } from "../../state/gameState.js";
 import { ScoreText } from "./scoreText.js";
 
 export class CoinPop {
@@ -17,15 +18,16 @@ export class CoinPop {
         this.markedForDeletion = false;
     }
 
-update() {
+update(time) {
     // gravity
     this.velocity.y += 0.3;
     this.position.y += this.velocity.y;
 
-    this.life--;
+    this.life -= time.secondsPassed * 60;
 
     if (this.life <= 0) {
         // 🔥 spawn "100" text
+        gameState.mario.coins += 1; // Increment coin count
         this.game.scoreTexts.push(
             new ScoreText(
                 this.game,

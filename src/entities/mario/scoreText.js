@@ -13,13 +13,13 @@ export class ScoreText {
         this.markedForDeletion = false;
     }
 
-    update() {
+    update(time) {
         this.position.y += this.velocity.y;
 
         // fade out
-        this.opacity -= 0.02;
+        this.opacity -= time.secondsPassed * 60 * 0.02;
 
-        this.life--;
+        this.life -= time.secondsPassed * 60;
 
         if (this.life <= 0) {
             this.markedForDeletion = true;

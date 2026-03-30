@@ -13,13 +13,13 @@ export class BrickDebris {
         this.life = 40; // frames before disappearing
     }
 
-    update() {
+    update(time) {
         this.velocity.y += this.gravity;
 
         this.position.x += this.velocity.x;
         this.position.y += this.velocity.y;
 
-        this.life--;
+        this.life -= time * 60;
     }
 
     draw(context, stage) {

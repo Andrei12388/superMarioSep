@@ -12,6 +12,10 @@ export class Brick {
         this.image = document.querySelector('img[alt="mario"]');
 
         this.isBroken = false;
+        this.bouncing = false;
+        this.bounceY = 0;
+        this.bounceSpeed = -2;
+        this.gravity = 0.2;
         this.breakTimer = 0;
         this.breakDuration = 20;
         this.remove = false;
@@ -75,15 +79,33 @@ export class Brick {
     this.remove = true; // remove brick immediately
 }
 
-    update() {
+    bump() {
+        if (this.isBroken || this.bouncing) return;
+
+        this.bouncing = true;
+        this.bounceY = 0;
+        this.bounceSpeed = -2;
+    }
+
+    update(time) {
         if (this.isBroken) {
-            this.breakTimer++;
+            this.breakTimer += time.secondsPassed * 60;
 
             // simple "pop" effect
             this.position.y -= 1;
 
             if (this.breakTimer >= this.breakDuration) {
                 this.remove = true;
+            }
+        }
+
+        if (this.bouncing) {
+            this.bounceY += this.bounceSpeed;
+            this.bounceSpeed += this.gravity;
+
+            if (this.bounceY >= 0) {
+                this.bounceY = 0;
+                this.bouncing = false;
             }
         }
     }
@@ -97,7 +119,7 @@ export class Brick {
             this.image,
             sx, sy, sw, sh,
             this.position.x - stage.x,
-            this.position.y - stage.y,
+            this.position.y - stage.y + this.bounceY,
             sw, sh
         );
     }

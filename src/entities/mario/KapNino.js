@@ -18,7 +18,7 @@ export class KapNino {
         this.isDead = false;
 
         this.deathTimer = 0;
-        this.deathDuration = 60; // ~1 second at 60fps
+        this.deathDuration = 1; // 1 second
         this.remove = false;
 
         this.direction = 1; // 1 = right, -1 = left
@@ -112,14 +112,14 @@ export class KapNino {
     this.velocity.y = -3;
 }
 
-   handleDeadState() {
+   handleDeadState(time) {
     this.velocity.x = 0;
 
     // gravity still applies for a nice drop
     this.velocity.y += this.gravity;
     this.position.y += this.velocity.y;
 
-    this.deathTimer++;
+    this.deathTimer += time.secondsPassed;
 
     if (this.deathTimer >= this.deathDuration) {
         this.remove = true; // mark for deletion
@@ -127,23 +127,6 @@ export class KapNino {
 }
 
     
-     updateAnimation(time){
-            const animation = this.animations[this.currentState];
-            const[, frameDelay] = animation[this.animationFrame];
-    
-            if(time.previous <= this.animationTimer + frameDelay*gameState.slowFX) return;
-                this.animationTimer = time.previous;
-                    
-                if(frameDelay <= FrameDelay.FREEZE) return;
-                this.animationFrame++;
-    
-                 if (this.animationFrame >= animation.length) this.animationFrame = 0;
-                     
-                 this.boxes = this.getBoxes(animation[this.animationFrame][0]);
-    
-        }
-    
-
     // --- BOX HANDLING ---
     updateBoxes() {
         const frames = this.frames.get(this.currentAnimationKey);
@@ -229,6 +212,14 @@ update(time) {
     this.position.y = newY;
 
     this.updateBoxes();
+
+    // Animate
+    this.animationTimer += time.secondsPassed * 60;
+    const frames = this.frames.get(this.currentAnimationKey);
+    if (frames && frames.length > 1 && this.animationTimer >= 10) {
+        this.animationFrame = (this.animationFrame + 1) % frames.length;
+        this.animationTimer -= 10;
+    }
 }
 
     // --- DEBUG DRAW ---

@@ -136,7 +136,7 @@ spawnPowerUp() {
         console.log("💡 Spawn item here!");
     }
 
-    update() {
+    update(time) {
          if(this.disabled) return
         if (this.bouncing) {
             this.bounceY += this.bounceSpeed;
@@ -149,11 +149,11 @@ spawnPowerUp() {
         }
 
         // Animate
-        this.animationTimer++;
+        this.animationTimer += time.secondsPassed * 60;
         const frames = this.frames.get(this.currentAnimationKey);
         if (frames && frames.length > 1 && this.animationTimer >= 10) {
             this.animationFrame = (this.animationFrame + 1) % frames.length;
-            this.animationTimer = 0;
+            this.animationTimer -= 10;
         }
     }
 

@@ -7,10 +7,12 @@ import { SecretBlock } from '../entities/mario/secretBlock.js';
 import * as control from '../inputHandler.js';
 import { playSound } from '../soundHandler.js';
 import { gameState } from '../state/gameState.js';
+import { drawText } from '../utils/UIHandler.js';
 
 export class MarioScene {
     constructor() {
         this.image = document.querySelector('img[alt="level1"]');
+        this.imageUI = document.querySelector('img[alt="mario"]');
         this.stageMusic = document.querySelector('audio#music-ground');
         this.soundPowerDown = document.querySelector('audio#sound-powerDown');
         this.debris = [];
@@ -108,10 +110,10 @@ export class MarioScene {
             new Brick(this, 2736, 141),
 
         ];
-
+        
         this.frames = new Map([
             ['stage', [5, 0, 3584, 480]],
-            ['coin',[194, 150, 14, 15]],
+            ['coin', [194, 150, 14, 15]],
         ]);
     }
 
@@ -145,7 +147,7 @@ export class MarioScene {
     // --- ENTITY UPDATES ---
     updateEntities(time) {
     // Update bricks
-    for (const brick of this.bricks) brick.update();
+    for (const brick of this.bricks) brick.update(time);
 
     // Reset Mario ground flag
     this.mario.onGround = false;
@@ -166,8 +168,15 @@ for (const brick of this.bricks) {
         marioHeadY + marioPush.height > brickBox.y &&
         isHorizontallyOverlapping
     ) {
-        brick.break();       // safe call for all bricks now
-        this.mario.velocity.y = 2;
+        if (brick.type !== undefined && typeof brick.hit === 'function') {
+            brick.hit(); // secret block behavior
+        } else if (this.mario.isBig && typeof brick.break === 'function') {
+            brick.break();
+        } else if (!this.mario.isBig && typeof brick.bump === 'function') {
+            brick.bump();
+        }
+
+        this.mario.velocity.y = 2;  // always bounce
     }
 
     // LANDING
@@ -190,25 +199,25 @@ for (const brick of this.bricks) {
 
     update(time) {
         // Initialize timer helpers (only once)
-        this.scoreTexts.forEach(t => t.update());
+        this.scoreTexts.forEach(t => t.update(time));
 this.scoreTexts = this.scoreTexts.filter(t => !t.markedForDeletion);
 if (!this.timeCounter) this.timeCounter = 0;
 
-// Count down every ~1 second (assuming 60 FPS)
-this.timeCounter += 1;
-
-if (this.timeCounter >= 50) {
-    this.timeCounter = 0;
-
+// Timer always updates
+this.timeCounter += time.secondsPassed;
+if (this.timeCounter >= 1) {
+    this.timeCounter -= 1;
     if (gameState.mario.time > 0) {
         gameState.mario.time--;
     }
 }
-        this.debris.forEach(d => d.update());
-       this.debris = this.debris.filter(d => !d.markedForDeletion);
+
+this.debris.forEach(d => d.update(time));
+this.debris = this.debris.filter(d => !d.markedForDeletion);
         this.updateEntities(time);
         this.mario.update(time);
 
+        if (this.mario.currentState !== FighterState.GROW) {
         for (const enemy of this.enemies) {
             enemy.update(time);
 
@@ -246,7 +255,9 @@ if (this.timeCounter >= 50) {
                 this.mario.velocity.y -= 3;
             }
         }
+        }
 
+        if (this.mario.currentState !== FighterState.GROW) {
         // Stage scrolling
         const canvasWidth = 200;
         const stageWidth = this.frames.get('stage')[2];
@@ -264,6 +275,7 @@ if (this.timeCounter >= 50) {
         if (this.stage.x < 0) this.stage.x = 0;
         if (this.stage.x > stageWidth - canvasWidth-300)
             this.stage.x = stageWidth - canvasWidth-300;
+        }
     }
 
     drawEntities(context) {
@@ -283,24 +295,6 @@ if (this.timeCounter >= 50) {
         }
     }
 
-    drawText(context){
-        context.font = "11px MarioFont";
-        context.fillStyle = "white";
-        context.fillText("Mario-Sep", 20, 20);
-        context.fillText("World", 224, 20);
-        context.fillText("Time", 304, 20);
-        context.fillText("x00", 158, 32);
-        this.drawFrame(context, 'coin', 140, 19);
-
-        context.fillText(String(gameState.mario.score).padStart(6, '0'), 20, 32);
-        context.fillText("1-1", 234, 32);
-        context.fillText(
-        String(gameState.mario.time).padStart(3, '0'),
-            314,
-            32
-        );
-    }
-
     draw(context) {
         // Draw stage
         this.drawFrame(context, 'stage', -this.stage.x, -this.stage.y);
@@ -318,7 +312,7 @@ if (this.timeCounter >= 50) {
        this.mario.drawDebug(context, this.stage);
        this.debris.forEach(d => d.draw(context, this.stage));
        this.scoreTexts.forEach(t => t.draw(context, this.stage));
-       this.drawText(context)
+       drawText(context, this.imageUI, this.frames);
      
     }
 }
