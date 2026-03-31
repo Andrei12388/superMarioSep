@@ -94,20 +94,29 @@ export class Laser {
         if (this.position.y >= this.ground) this.explode();
 
         // Brick collision
-        for (const brick of this.game.bricks) {
-            if (brick.isBroken) continue;
-            const box = brick.getWorldBox();
-            const laserBox = this.getWorldBox(this.boxes.push);
-            if (
-                laserBox.x < box.x + box.width &&
-                laserBox.x + laserBox.width > box.x &&
-                laserBox.y < box.y + box.height &&
-                laserBox.y + laserBox.height > box.y
-            ) {
-                this.explode();
-                break;
-            }
+      // Brick collision
+for (const brick of this.game.bricks) {
+    if (brick.isBroken) continue;
+
+    const box = brick.getWorldBox();
+    const laserBox = this.getWorldBox(this.boxes.push);
+
+    if (
+        laserBox.x < box.x + box.width &&
+        laserBox.x + laserBox.width > box.x &&
+        laserBox.y < box.y + box.height &&
+        laserBox.y + laserBox.height > box.y
+    ) {
+        // Break the brick
+        if (typeof brick.break === 'function') {
+            brick.break();
         }
+
+        // Make the laser explode
+        this.explode();
+        break;
+    }
+}
     }
 
     handleDeadInit() {

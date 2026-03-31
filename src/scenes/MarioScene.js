@@ -419,7 +419,7 @@ setEnemies(newEnemies) {
     );
     
     this.enemies.push(
-      new KapNino(this, 120, 60),
+      new KapNino(this, 120, 60, 2),
 
     );
     
@@ -427,14 +427,13 @@ setEnemies(newEnemies) {
         new Pipe(this, 208, 145, 38, 30, {
             stage: 'stage',
             width: 200,
-            destination: { x: 40, y: 50 },
+            destination: { x: 2610, y: 170 },
             music: document.querySelector('audio#music-ground'),
         }),
     );
     
     // Reset Mario
-    this.mario.position.x = 40;
-    this.mario.position.y = 50;
+   
     this.mario.resetVelocities();
     this.mario.changeStage = false;
 }
@@ -551,8 +550,7 @@ setEnemies(newEnemies) {
             new Brick(this, 2736, 141),
         );
          // Reset Mario
-    this.mario.position.x = 40;
-    this.mario.position.y = 50;
+    this.superManSpawned = false;
     this.mario.resetVelocities();
     this.mario.changeStage = false;
 }

@@ -5,13 +5,14 @@ import { gameState } from '../../state/gameState.js';
 import { ScoreText } from './scoreText.js';
 
 export class KapNino {
-    constructor(game, x, y) {
+    constructor(game, x, y, speed = 0.5) {
         this.game = game;
          this.soundDead = document.querySelector('audio#sound-stomp');
          this.soundKapDead = document.querySelector('audio#sound-kapDead');
         // --- Constants & initial state ---
         this.ground = 207;
         this.maxSpeed = 1;
+         this.baseSpeed = speed; 
         this.acceleration = 0.1;
         this.friction = 0.1;
         this.gravity = 0.5;
@@ -164,10 +165,18 @@ update(time) {
         return;
     }
 
-    const speed = 0.5;
+   // --- Horizontal movement based on direction ---
+let speed = this.baseSpeed;
 
-    // --- Horizontal movement based on direction ---
-    this.velocity.x = this.direction * speed;
+// Optional: scale speed by difficulty
+if (this.game.level && this.game.level > 1) {
+    speed += 0.1 * (this.game.level - 1); // +0.1 per level
+}
+
+// Optional: add random slight variation
+speed *= 0.9 + Math.random() * 0.2; // 90%-110%
+
+this.velocity.x = this.direction * speed;
 
     // --- Apply gravity ---
     this.velocity.y += this.gravity;
