@@ -86,7 +86,7 @@ export class SuperMan {
             this.position.x,
             this.position.y,
             angle,
-            4
+            7
         );
         this.soundSuperman.play();
         // 🔥 push into enemies array so it updates/draws automatically

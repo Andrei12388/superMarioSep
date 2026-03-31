@@ -19,6 +19,7 @@ export class Mario {
         this.direction = 1;
 
         this.walkEndAnim = false;
+        this.removeMario = false; // flag to signal Mario removal after auto-walk finishes
 
         this.enteringPipe = false;
         this.pipeSoundPlay = false;
@@ -154,6 +155,7 @@ export class Mario {
     
     handleWalkEndInit(){
         console.log("Entered WALKEND state");
+        playSound(document.querySelector('audio#music-levelFinished'), 1);
         this.currentAnimationKey = this.isBig ? 'walk' : 'walkSmall'; 
     }
 
@@ -373,7 +375,11 @@ if (this.autoWalk) {
         );
         this.walkEndAnim = true;
     }
-
+    if (this.position.x >= 3263) {
+        this.position.x = 3263;
+        this.velocity.x = 0;
+        this.removeMario = true; // signal to remove Mario after reaching end
+    }
     this.position.x += this.velocity.x;
 
 
@@ -568,6 +574,7 @@ if (control.isBackward(this.playerId, 1)) {
 }
 
     drawFrame(context, x, y, direction = 1, scale = 1, alpha = 1) {
+         if (this.removeMario) return;
         if (this.isHurt && !this.isDead && Math.floor(this.hurtTimer / 5) % 2 === 0) alpha = 0.3;
 
         const frames = this.frames.get(this.currentAnimationKey);

@@ -48,6 +48,7 @@ export class MarioScene {
         this.scoreTexts = [];
         this.stageMusic.play();
         this.onGround = false;
+        
 
         this.debris.push(new FlagPole(this, 3163, 40));
 
@@ -450,6 +451,9 @@ const isUnder =
 
     update(time) {
         if (gameState.changeScene) this.game.setScene(new LevelTransition(this.game));
+        if(gameState.levelFinished) {
+            this.enemies.length = 0;
+        };
 
         // Update players
         for (const player of this.players) {

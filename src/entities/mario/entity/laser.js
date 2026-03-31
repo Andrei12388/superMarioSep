@@ -2,7 +2,7 @@ import { FighterState } from "../../../constants/fighter.js";
 
 
 export class Laser {
-    constructor(game, x, y, angle = 0, speed = 4) {
+    constructor(game, x, y, angle = 0, speed = 6) {
         this.game = game;
 
         this.soundLaser = document.querySelector('audio#sound-laserBeam');

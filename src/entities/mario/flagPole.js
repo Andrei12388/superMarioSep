@@ -1,6 +1,6 @@
 import { playSound } from '../../soundHandler.js';
 import { gameState } from '../../state/gameState.js';
-import { ScoreText } from "./scoreText.js";
+import { ScoreText } from './scoreText.js';
 
 export class FlagPole {
     constructor(game, x, y) {
@@ -8,14 +8,25 @@ export class FlagPole {
 
         // Position
         this.position = { x, y };
+        this.topY = y;              // top of pole
+        this.bottomY = y + 168;    // bottom of pole (same as sprite height)
 
         // Coin floats upward initially, no gravity
         this.floatOffset = -16; // how much it pops up
+        // How far above the bottom Mario should stop
+this.flagBottomOffset = 16; // tweak this value
         this.startY = y;
 
         this.isActivated = false;
-        this.flagY = y; // flag position
+        this.flagY = y+6; // flag position
         this.slideSpeed = 0.5;
+
+        // Horizontal sway
+this.baseX = x;        // original X position
+this.offsetX = 0;      // current offset
+this.direction = 1;    // 1 = right, -1 = left
+this.maxOffset = 30;   // max left/right movement
+this.speedX = 1;     // horizontal speed
 
         this.onFlagPole = false;
         this.flagPole = null;
@@ -47,23 +58,49 @@ export class FlagPole {
    update() {
     const mario = this.game.mario;
 
-    if (mario.onFlagPole) {
-    mario.position.y += this.slideSpeed;
-    this.flagY += this.slideSpeed;
+// Update actual position
+this.position.x = this.baseX + this.offsetX;
 
-    // When Mario reaches ground
-    if (mario.onGround || mario.position.y >= 184) {
+  if (mario.onFlagPole) {
+    // Calculate where Mario should stop (slightly above bottom)
+    const bottomStopY = this.bottomY - this.flagBottomOffset;
+
+    // Move Mario down
+    mario.position.y += this.slideSpeed;
+
+    // Clamp Mario's position
+    if (mario.position.y >= bottomStopY) {
+        mario.position.y = bottomStopY;
+        mario.velocity.y = 0;
         mario.onFlagPole = false;
 
-        // 🚀 TELEPORT TO OTHER SIDE
+        // TELEPORT TO OTHER SIDE
         mario.position.x = this.position.x + 20; // adjust spacing
         mario.direction = 1;
 
-        // 🚀 START AUTO WALK
+        // START AUTO WALK
         mario.autoWalk = true;
 
         console.log("Start auto walk!");
     }
+
+    // Update flag position to follow Mario, but also clamp
+    this.flagY = Math.min(mario.position.y, this.bottomY - this.flagBottomOffset-12);
+}
+
+if(!this.collected){
+    
+    // Move flagpole left/right
+this.offsetX += this.direction * this.speedX;
+
+// Reverse direction if max offset reached
+if (this.offsetX > this.maxOffset) {
+    this.offsetX = this.maxOffset;
+    this.direction = -1;
+} else if (this.offsetX < -this.maxOffset) {
+    this.offsetX = -this.maxOffset;
+    this.direction = 1;
+}
 }
 
     if (!this.isActivated) {
@@ -95,7 +132,7 @@ export class FlagPole {
             // Stop at ground
             if (mario.position.y >= this.game.ground || mario.onGround) {
                 mario.onFlagPole = false;
-
+               
                 // Optional: trigger level end here
                 console.log("Level Complete!");
             }
@@ -103,28 +140,51 @@ export class FlagPole {
     }
 }
 
-   collect() {
+  collect() {
     if (this.collected) return;
+    gameState.levelFinished = true;
 
+    this.game.stageMusic.pause();
     this.collected = true;
     this.isActivated = true;
 
     const mario = this.game.mario;
 
-    // Lock Mario to pole
+    // Lock Mario
     mario.velocity.x = 0;
     mario.velocity.y = 0;
 
-    mario.onFlagPole = true; // NEW STATE
+    mario.onFlagPole = true;
     mario.flagPole = this;
 
-    // Snap Mario to pole X
+    // Snap Mario to pole
     mario.position.x = this.position.x;
 
-    // Set flag at Mario height
+    // Set flag position
     this.flagY = mario.position.y;
 
-    playSound(document.querySelector('audio#sound-coin'), 1);
+    // ✅ CALCULATE HEIGHT
+    const poleHeight = this.bottomY - this.topY;
+    const grabHeight = this.bottomY - mario.position.y;
+
+    const ratio = grabHeight / poleHeight;
+
+    let score = 100;
+
+    if (ratio > 0.9) score = 5000;
+    else if (ratio > 0.7) score = 2000;
+    else if (ratio > 0.5) score = 800;
+    else if (ratio > 0.3) score = 400;
+    else if (ratio > 0.1) score = 200;
+
+    // ✅ ADD SCORE
+    gameState.mario.score += score;
+
+    this.game.debris.push(
+            new ScoreText(this.game, mario.position.x, mario.position.y, score)
+        );
+
+    playSound(document.querySelector('audio#sound-flagPole'), 1);
 }
 
 draw(context, stage) {
@@ -143,10 +203,10 @@ draw(context, stage) {
     // ✅ Draw FLAG (example sprite area — adjust if needed)
     context.drawImage(
         this.image,
-        450, 120, 16, 16, // ← FLAG sprite coords (adjust!)
-        this.position.x - stage.x,
+        439, 71, 44, 31, // ← FLAG sprite coords (adjust!)
+        this.position.x - stage.x-11,
         this.flagY - stage.y,
-        16,
+        20,
         16
     );
 }

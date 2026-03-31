@@ -113,4 +113,5 @@ export const gameState = {
     world: 1,
     level: 1,
     changeScene: false,
+    levelFinished: false,
 };
