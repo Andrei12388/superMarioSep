@@ -20,7 +20,7 @@ export class Bullet {
     getBox() {
         return {
             x: this.position.x,
-            y: this.position.y,
+            y: this.position.y-5,
             width: this.width,
             height: this.height
         };

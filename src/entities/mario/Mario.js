@@ -16,7 +16,7 @@ export class Mario {
         this.ground = 207;
 
         // Position offset for player2
-        this.position = { x: 2600 + playerId * 40, y: 200 };
+        this.position = { x: 30 + playerId * 40, y: 200 };
         this.direction = 1;
 
         this.powerType = null;
@@ -60,7 +60,7 @@ export class Mario {
         // --- Animation & frames ---
         this.frames = new Map([
              ['gunBullet', [
-                [[300, 467, 17, 6], [8, 4], { push: [-2, -8, 8, 6], hurt: [-2, -8, 8, 6],  }],
+                [[300, 467, 17, 6], [8, 4], { push: [-2, -4, 8, 6], hurt: [-2, -4, 8, 6],  }],
             ]],
             ['gunSmoke', [
                 [[298, 439, 30, 18], [15, 16], { push: [0, 0, 0, 0], hurt: [0, 0, 0, 0], }],
@@ -673,7 +673,7 @@ if (control.isBackward(this.playerId, 1)) {
 
     drawFrame(context, x, y, direction = 1, scale = 1, alpha = 1) {
          if (this.removeMario) return;
-        if (this.isHurt && !this.isDead && Math.floor(this.hurtTimer / 5) % 2 === 0) alpha = 0.3;
+        if (this.isHurt && !this.isDead && Math.floor(this.hurtTimer / 6) % 2 === 0) alpha = 0.3;
 
         const frames = this.frames.get(this.currentAnimationKey);
         if (!frames) return;

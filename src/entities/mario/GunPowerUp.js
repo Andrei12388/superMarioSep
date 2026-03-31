@@ -103,11 +103,11 @@ export class GunPowerUp {
         this.markedForDeletion = true;
 
         const mario = this.game.mario;
-        if (!mario.isBig) {
+        
            mario.powerType = 'gun';
             mario.changeState(FighterState.GROW);
             playSound(document.querySelector('audio#sound-powerUp'), 1);
-        }
+        
 
         gameState.mario.poweredUp = true;
 

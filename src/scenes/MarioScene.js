@@ -183,12 +183,10 @@ export class MarioScene {
             new Ground(this, 2923, 160, 16, 16),
             new Ground(this, 2987, 96, 16, 16),
 
-             new SecretBlock(this, 2700,80,{
+             new SecretBlock(this, 2720,141,{
                 type: 'powerup',
                 power: 'gunPowerup'
             }),
-
-            
 
             new Brick(this, 1888, 141),
             
@@ -202,7 +200,7 @@ export class MarioScene {
 
             new Brick(this, 2688, 141),
             new Brick(this, 2704, 141),
-            new SecretBlock(this, 2720, 141),
+            
             new Brick(this, 2736, 141),
 
         ]);
@@ -465,7 +463,7 @@ const isUnder =
         }
     }
 
- updateHorde(time) {
+updateHorde(time) {
     this.hordeTimer += time.secondsPassed;
 
     if (this.hordeCount >= 10 || gameState.hordekillCount >= 5) this.cameraLock = false;
@@ -475,19 +473,20 @@ const isUnder =
         this.hordeInterval = Math.random() * 2 + 2; // reset AFTER trigger
         this.hordeCount++;
 
-        if (this.hordeSpawnSide === 'left') {
+        // Randomly pick left or right
+        const spawnSide = Math.random() < 0.5 ? 'left' : 'right';
+
+        if (spawnSide === 'left') {
             this.enemies.push(
-                new KapNino(this, 2620, 157, 2, 1),
+                new KapNino(this, 2620, 157, 2.5, 1),
             );
-            this.hordeSpawnSide = 'right'; // switch
         } else {
             this.enemies.push(
-                new KapNino(this, 2875, 157, 2, -1),
+                new KapNino(this, 2875, 157, 2.5, -1),
             );
-            this.hordeSpawnSide = 'left'; // switch back
         }
 
-        console.log("Enemy spawned:", this.hordeSpawnSide);
+        console.log("Enemy spawned:", spawnSide);
     }
 }
 
@@ -715,7 +714,10 @@ const isUnder =
 
             new Brick(this, 2688, 141),
             new Brick(this, 2704, 141),
-            new SecretBlock(this, 2720, 141),
+            new SecretBlock(this, 2720,141,{
+                type: 'powerup',
+                power: 'gunPowerup'
+            }),
             new Brick(this, 2736, 141),
         );
 
