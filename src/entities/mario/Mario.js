@@ -362,9 +362,11 @@ handleDeath(time) {
     this.position.y = this.currentPipe.options.destination.y;
 
     this.game.stageContext.frame = this.currentPipe?.options.stage || 'stage';
+    gameState.stage = this.currentPipe?.options.stage || 'stage';
     this.game.stageContext.width = this.currentPipe?.options.width || 200;
-   
-    this.currentPipe.options.music.play();
+    this.game.stageMusic = this.currentPipe.options.music;
+    this.game.stageMusic.currentTime = 0;
+    this.game.stageMusic.play();
     
 
     this.changeStage = true;

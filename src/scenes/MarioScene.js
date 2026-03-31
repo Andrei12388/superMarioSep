@@ -358,11 +358,13 @@ setEnemies(newEnemies) {
         }
 
         if (this.mario.changeStage) {
+            if(gameState.stage=== 'stagePipe') {
     // Clear & push new stage
-     this.bricks = this.bricks || [];
+       this.bricks = this.bricks || [];
         this.enemies = this.enemies || [];
         this.pipes = this.pipes || [];
             // Clear old arrays
+        this.bricks.length = 0;
         this.bricks.length = 0;
         this.enemies.length = 0;
         this.pipes.length = 0;
@@ -423,10 +425,10 @@ setEnemies(newEnemies) {
     
     this.pipes.push(
         new Pipe(this, 208, 145, 38, 30, {
-            stage: 'stagePipe',
-            width: 40,
+            stage: 'stage',
+            width: 200,
             destination: { x: 40, y: 50 },
-            music: document.querySelector('audio#music-underground'),
+            music: document.querySelector('audio#music-ground'),
         }),
     );
     
@@ -436,6 +438,125 @@ setEnemies(newEnemies) {
     this.mario.resetVelocities();
     this.mario.changeStage = false;
 }
+ else if(gameState.stage === 'stage') {
+    // Clear & push new stage
+       this.bricks = this.bricks || [];
+        this.enemies = this.enemies || [];
+        this.pipes = this.pipes || [];
+            // Clear old arrays
+        this.bricks.length = 0;
+        this.debris.length = 0;
+        this.enemies.length = 0;
+        this.pipes.length = 0;
+
+        this.enemies.push(
+            new KapNino(this, 400, 150),
+            new KapNino(this, 440, 150),
+            new CloudEnemy(this, 470, 100),
+          //  new SuperMan(this, 2000, 50),
+            new KapNino(this, 682, 150),
+            new KapNino(this, 656, 150),
+        );
+
+        this.pipes.push(
+             new Pipe(this, 915, 144, 15, 64, {
+                stage: 'stagePipe',
+                width: 40,
+                destination: { x: 40, y: 50 },
+                music: document.querySelector('audio#music-underground'),
+            }),
+        );
+
+        this.bricks.push(
+            new Brick(this, 320, 141),
+            new Brick(this, 352, 141),
+            new Brick(this, 384, 141),
+
+            new Brick(this, 1232, 141),
+            new SecretBlock(this, 1248,141),
+            new Brick(this, 1264, 141),
+
+            new Brick(this, 1280, 80),
+            new Brick(this, 1296, 80),
+            new Brick(this, 1312, 80),
+            new Brick(this, 1328, 80),
+            new Brick(this, 1344, 80),
+            new Brick(this, 1360, 80),
+            new Brick(this, 1376, 80),
+            new Brick(this, 1392, 80),
+
+            new Brick(this, 1456, 80),
+            new Brick(this, 1472, 80),
+            new SecretBlock(this, 1488, 80),
+            new Brick(this, 1498, 141),
+
+            new Brick(this, 1600, 141),
+            new Brick(this, 1616, 141),
+
+            new SecretBlock(this, 1696, 141),
+            new SecretBlock(this, 1744, 141),
+            new SecretBlock(this, 1744, 80),
+            new SecretBlock(this, 1792, 141),
+
+          
+            //early stage blocks
+            new SecretBlock(this, 336,141,{
+                type: 'powerup',
+                power: 'mushroom'
+            }),
+            new SecretBlock(this, 256,141),
+            new SecretBlock(this, 368,141),
+            new SecretBlock(this, 353,80),
+
+            //ground
+            new Ground(this, 0, 208, 1100, 16),
+            new Ground(this, 1131, 208, 240, 16),
+            new Ground(this, 1419, 208, 1024, 16),
+            new Ground(this, 2475, 208, 1105, 16),
+
+            //pipes
+            new Ground(this, 442, 175, 34, 30),
+            new Ground(this, 602, 160, 32, 48),
+            new Ground(this, 731, 144, 31, 64),
+
+            new Ground(this, 907, 144, 31, 64),
+
+            new Ground(this, 2602, 176, 32, 32),
+            new Ground(this, 2857, 176, 32, 32),
+
+            //heavybrick
+            new Ground(this, 2155, 176, 48, 32),
+            new Ground(this, 2139, 192, 16, 16),
+            new Ground(this, 2171, 160, 32, 16),
+            new Ground(this, 2187, 144, 16, 16),
+
+            new Ground(this, 2235, 176, 48, 32),
+            new Ground(this, 2283, 192, 16, 16),
+            new Ground(this, 2235, 160, 32, 16),
+            new Ground(this, 2235, 144, 16, 16),
+
+            new Brick(this, 1888, 141),
+            
+            new Brick(this, 2048, 80),
+            new SecretBlock(this, 2062, 80),
+            new SecretBlock(this, 2078, 80),
+            new Brick(this, 2094, 80),
+
+            new Brick(this, 2062, 141),
+            new Brick(this, 2078, 141),
+
+            new Brick(this, 2688, 141),
+            new Brick(this, 2704, 141),
+            new SecretBlock(this, 2720, 141),
+            new Brick(this, 2736, 141),
+        );
+         // Reset Mario
+    this.mario.position.x = 40;
+    this.mario.position.y = 50;
+    this.mario.resetVelocities();
+    this.mario.changeStage = false;
+}
+        }
 
          // Spawn SuperMan dynamically when Mario reaches x = 1500
     if (!this.superManSpawned && this.mario.position.x >= 700) {
