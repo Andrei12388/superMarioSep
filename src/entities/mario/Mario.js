@@ -18,6 +18,8 @@ export class Mario {
         this.position = { x: 2550 + playerId * 40, y: 200 };
         this.direction = 1;
 
+        this.walkEndAnim = false;
+
         this.enteringPipe = false;
         this.pipeSoundPlay = false;
         this.pipeTimer = 0;
@@ -105,7 +107,7 @@ export class Mario {
             [FighterState.IDLE]: {
                 init: this.handleIdleInit.bind(this),
                 update: this.handleIdleState.bind(this),
-                validFrom: [undefined, FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALK_BACKWARD, FighterState.GROW]
+                validFrom: [undefined, FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALKEND,FighterState.WALK_BACKWARD, FighterState.GROW]
             },
             [FighterState.GROW]: {
                 init: this.handleGrowInit.bind(this),
@@ -115,12 +117,17 @@ export class Mario {
             [FighterState.WALK_FORWARD]: {
                 init: this.handleWalkForwardInit.bind(this),
                 update: this.handleWalkForwardState.bind(this),
-                validFrom: [FighterState.IDLE, FighterState.WALK_BACKWARD]
+                validFrom: [FighterState.IDLE, FighterState.WALK_BACKWARD, FighterState.WALKEND]
+            },
+             [FighterState.WALKEND]: {
+                init: this.handleWalkEndInit.bind(this),
+                update: this.handleWalkEndState.bind(this),
+                validFrom: [FighterState.IDLE, FighterState.WALK_BACKWARD, FighterState.WALK_FORWARD]
             },
             [FighterState.WALK_BACKWARD]: {
                 init: this.handleWalkBackwardInit.bind(this),
                 update: this.handleWalkBackwardState.bind(this),
-                validFrom: [FighterState.IDLE, FighterState.WALK_FORWARD]
+                validFrom: [FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALKEND]
             }
         };
 
@@ -145,6 +152,16 @@ export class Mario {
         state.init(...args);
     }
     
+    handleWalkEndInit(){
+        console.log("Entered WALKEND state");
+        this.currentAnimationKey = this.isBig ? 'walk' : 'walkSmall'; 
+    }
+
+    handleWalkEndState() {
+        this.velocity.x = 0.5;
+        console.log("Auto walking...");
+         this.currentAnimationKey = this.isBig ? 'walk' : 'walkSmall'; 
+    }
 
     // --- IDLE STATE ---
     handleIdleInit() {
@@ -179,6 +196,7 @@ export class Mario {
 }
 
     handleIdleState() {
+      
         if (control.isHeavyKick(this.playerId) && this.onGround) { // <-- property
             this.velocity.y = -this.jumpForce;
             playSound(this.soundJump, 1)
@@ -341,6 +359,30 @@ handleDeath(time) {
 
     // --- PHYSICS & UPDATE ---
    update(time) {
+    // 🚨 FLAG AUTO WALK OVERRIDE
+if (this.autoWalk) {
+    this.velocity.x = 0.5;
+    this.direction = 1;
+
+    // ✅ ONLY change state if not already walking
+    if (!this.walkEndAnim) {
+        console.log("Changing to WALKEND state");
+        this.changeState(
+            FighterState.WALKEND,
+            this.isBig ? 'walk' : 'walkSmall'
+        );
+        this.walkEndAnim = true;
+    }
+
+    this.position.x += this.velocity.x;
+
+
+}
+    if (this.onFlagPole) {
+    this.velocity.x = 0;
+    this.velocity.y = 0;
+    return; // 🚨 stop ALL normal logic
+}
    if (this.enteringPipe) {
     this.pipeTimer++;
 
@@ -409,16 +451,6 @@ if (!control.isForward(this.playerId, 1) && !control.isBackward(this.playerId, 1
         this.velocity.x += this.friction;
         if (this.velocity.x > 0) this.velocity.x = 0;
     }
-}
-// --- Horizontal input acceleration ---
-if (control.isForward(this.playerId, 1)) {
-    this.velocity.x += this.acceleration;
-    this.direction = 1;
-}
-
-if (control.isBackward(this.playerId, 1)) {
-    this.velocity.x -= this.acceleration;
-    this.direction = -1;
 }
 
 this.position.x += this.velocity.x;
@@ -518,6 +550,21 @@ if (this.animationTimer >= 10) {
         this.animationFrame = (this.animationFrame + 1) % frames.length;
     }
 }
+
+
+if(this.autoWalk) return;
+// --- Horizontal input acceleration ---
+if (control.isForward(this.playerId, 1)) {
+    
+    this.velocity.x += this.acceleration;
+    this.direction = 1;
+}
+
+if (control.isBackward(this.playerId, 1)) {
+    this.velocity.x -= this.acceleration;
+    this.direction = -1;
+}
+
 }
 
     drawFrame(context, x, y, direction = 1, scale = 1, alpha = 1) {

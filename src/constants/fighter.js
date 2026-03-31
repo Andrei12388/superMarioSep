@@ -213,6 +213,7 @@ export const FighterState = {
 IDLE: 'idle',
 GROW: 'grow',
 DEAD: 'dead',
+WALKEND: 'walkEnd',
 
 WALK_FORWARD: 'walkForwards',
 WALK_BACKWARD: 'walkBackwards',

@@ -2,6 +2,7 @@ import { FighterState } from '../constants/fighter.js';
 import { Brick } from '../entities/mario/brick.js';
 import { CloudEnemy } from '../entities/mario/cloudEnemy.js';
 import { Coin } from '../entities/mario/coin.js';
+import { FlagPole } from '../entities/mario/flagPole.js';
 import { Ground } from '../entities/mario/ground.js';
 import { KapNino } from '../entities/mario/KapNino.js';
 import { Mario } from '../entities/mario/Mario.js';
@@ -47,6 +48,8 @@ export class MarioScene {
         this.scoreTexts = [];
         this.stageMusic.play();
         this.onGround = false;
+
+        this.debris.push(new FlagPole(this, 3163, 40));
 
         this.stage = { x: 0, y: 0 };
         if(gameState.mario.players === 2){
@@ -621,7 +624,7 @@ const isUnder =
             new Ground(this, 2602, 176, 32, 32),
             new Ground(this, 2857, 176, 32, 32),
 
-            //heavybrick
+           //heavybrick
             new Ground(this, 2155, 176, 48, 32),
             new Ground(this, 2139, 192, 16, 16),
             new Ground(this, 2171, 160, 32, 16),
@@ -631,6 +634,30 @@ const isUnder =
             new Ground(this, 2283, 192, 16, 16),
             new Ground(this, 2235, 160, 32, 16),
             new Ground(this, 2235, 144, 16, 16),
+
+            new Ground(this, 2395, 160, 48, 48),
+            new Ground(this, 2411, 144, 32, 16),
+            new Ground(this, 2379, 176, 16, 32),
+            new Ground(this, 2363, 192, 16, 16),
+
+            new Ground(this, 2475, 160, 32, 48),
+            new Ground(this, 2475, 144, 16, 16),
+            new Ground(this, 2507, 176, 16, 32),
+            new Ground(this, 2523, 192, 16, 16),
+
+            //last section blocks
+            new Ground(this, 2971, 112, 64, 96),
+            new Ground(this, 3003, 80, 32, 32),
+            new Ground(this, 2955, 128, 16, 80),
+            new Ground(this, 2939, 144, 16, 64),
+            new Ground(this, 2907, 176, 32, 32),
+            new Ground(this, 2891, 192, 16, 16),
+            new Ground(this, 2923, 160, 16, 16),
+            new Ground(this, 2987, 96, 16, 16),
+
+            new Ground(this, 3163, 192, 16, 16),
+
+           
 
             new Brick(this, 1888, 141),
             
