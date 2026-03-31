@@ -2,7 +2,7 @@ import { playSound } from '../../soundHandler.js';
 import { gameState } from '../../state/gameState.js';
 import { BrickDebris } from './brokenDebris.js';
 export class Brick {
-    constructor(game, x, y) {
+    constructor(game, x, y, color = 'brown') {
         this.game = game;
 
         this.position = { x, y };
@@ -17,16 +17,18 @@ export class Brick {
         this.bounceY = 0;
         this.bounceSpeed = -2;
         this.gravity = 0.2;
+        this.brickColor = color;
         this.breakTimer = 0;
         this.breakDuration = 20;
         this.remove = false;
 
         // Simple brick frame (adjust to your sprite sheet)
         this.frames = new Map([
-            ['brick', [[16, 150, 16, 16]]], // CHANGE coords if needed
+            ['brown', [[16, 150, 16, 16]]],
+            ['dark', [[125, 127, 16, 16]]], // CHANGE coords if needed
         ]);
 
-        this.currentAnimationKey = 'brick';
+        this.currentAnimationKey = this.brickColor;
         this.animationFrame = 0;
 
         // Collision box

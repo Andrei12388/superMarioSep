@@ -3,9 +3,6 @@ import { Control } from '../../constants/control.js';
 import * as control from '../../inputHandler.js';
 import { playSound } from '../../soundHandler.js';
 import { gameState } from '../../state/gameState.js';
-import { Ground } from './ground.js';
-import { KapNino } from './KapNino.js';
-import { Pipe } from './pipe.js';
 
 export class Mario {
     constructor(game, playerId = 0) {

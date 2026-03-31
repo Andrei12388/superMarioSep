@@ -1,6 +1,7 @@
 import { FighterState } from '../constants/fighter.js';
 import { Brick } from '../entities/mario/brick.js';
 import { CloudEnemy } from '../entities/mario/cloudEnemy.js';
+import { Coin } from '../entities/mario/coin.js';
 import { Ground } from '../entities/mario/ground.js';
 import { KapNino } from '../entities/mario/KapNino.js';
 import { Mario } from '../entities/mario/Mario.js';
@@ -365,9 +366,50 @@ setEnemies(newEnemies) {
         this.bricks.length = 0;
         this.enemies.length = 0;
         this.pipes.length = 0;
+
+         this.debris.push(new Coin(this, 64, 48));
+         this.debris.push(new Coin(this, 80, 48));
+         this.debris.push(new Coin(this, 96, 48));
+         this.debris.push(new Coin(this, 112, 48));
+         this.debris.push(new Coin(this, 128, 48));
+         this.debris.push(new Coin(this, 144, 48));
+         this.debris.push(new Coin(this, 160, 48));
+
+         this.debris.push(new Coin(this, 64, 74));
+         this.debris.push(new Coin(this, 80, 74));
+         this.debris.push(new Coin(this, 96, 74));
+         this.debris.push(new Coin(this, 112, 74));
+         this.debris.push(new Coin(this, 128, 74));
+         this.debris.push(new Coin(this, 144, 74));
+         this.debris.push(new Coin(this, 160, 74));
+
+         this.debris.push(new Coin(this, 64, 100));
+         this.debris.push(new Coin(this, 80, 100));
+         this.debris.push(new Coin(this, 96, 100));
+         this.debris.push(new Coin(this, 112, 100));
+         this.debris.push(new Coin(this, 128, 100));
+         this.debris.push(new Coin(this, 144, 100));
+         this.debris.push(new Coin(this, 160, 100));
     
     // Push new elements
     this.bricks.push(
+        new Brick(this, 64, 128, 'dark'),
+        new Brick(this, 80, 128, 'dark'),
+        new Brick(this, 96, 128, 'dark'),
+        new Brick(this, 112, 128, 'dark'),
+        new Brick(this, 128, 128, 'dark'),
+        new Brick(this, 144, 128, 'dark'),
+        new Brick(this, 160, 128, 'dark'),
+
+        new Brick(this, 64, 0, 'dark'),
+        new Brick(this, 80, 0, 'dark'),
+        new Brick(this, 96, 0, 'dark'),
+        new Brick(this, 112, 0, 'dark'),
+        new Brick(this, 128, 0, 'dark'),
+        new Brick(this, 144, 0, 'dark'),
+        new Brick(this, 160, 0, 'dark'),
+
+      
         new Ground(this, 1, 176, 271, 31),
         new Ground(this, 0, 0, 15, 176),
         new Ground(this, 208, 145, 38, 30),
@@ -375,7 +417,8 @@ setEnemies(newEnemies) {
     );
     
     this.enemies.push(
-      new KapNino(this, 120, 60)
+      new KapNino(this, 120, 60),
+
     );
     
     this.pipes.push(
@@ -494,7 +537,7 @@ setEnemies(newEnemies) {
     drawEntities(context) {
         for (const brick of this.bricks) {
             brick.draw(context, this.stage);
-            brick.drawDebug(context, this.stage);
+           // brick.drawDebug(context, this.stage);
         }
            for (const pipe of this.pipes) {
            // pipe.draw(context, this.stage);
@@ -533,7 +576,7 @@ setEnemies(newEnemies) {
                 player.position.y - this.stage.y,
                 player.direction
             );
-            player.drawDebug(context, this.stage);
+          //  player.drawDebug(context, this.stage);
         }
          // Draw bricks behind Mario
         this.drawEntities(context);
