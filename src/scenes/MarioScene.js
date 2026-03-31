@@ -27,7 +27,17 @@ export class MarioScene {
             frame: 'stage',
             width: 200,
         }
-        
+
+        // 1️⃣ Make sure arrays exist once in your game constructor
+        this.bricks = this.bricks || [];
+        this.enemies = this.enemies || [];
+        this.pipes = this.pipes || [];
+
+        // 2️⃣ When resetting stage, clear first, then push
+        this.bricks.length = 0;
+        this.enemies.length = 0;
+        this.pipes.length = 0;
+                
 
         this.superManSpawned = false;
        
@@ -51,26 +61,25 @@ export class MarioScene {
         
         this.mario = this.players[0];
 
-        this.enemies = [
+        this.setEnemies([
             new KapNino(this, 400, 150),
             new KapNino(this, 440, 150),
             new CloudEnemy(this, 470, 100),
           //  new SuperMan(this, 2000, 50),
             new KapNino(this, 682, 150),
             new KapNino(this, 656, 150),
-        ];
+        ]);
 
-        this.pipes = [
+        this.setPipes([
              new Pipe(this, 915, 144, 15, 64, {
                 stage: 'stagePipe',
                 width: 40,
-                destination: { x: 40, y: 50 }
+                destination: { x: 40, y: 50 },
+                music: document.querySelector('audio#music-underground'),
             }),
-        ];
+        ]);
 
-
-
-        this.bricks = [
+        this.setBricks([
             new Brick(this, 320, 141),
             new Brick(this, 352, 141),
             new Brick(this, 384, 141),
@@ -153,7 +162,7 @@ export class MarioScene {
             new SecretBlock(this, 2720, 141),
             new Brick(this, 2736, 141),
 
-        ];
+        ]);
         
         this.frames = new Map([
             ['stage', [5, 0, 3584, 480]],
@@ -161,6 +170,19 @@ export class MarioScene {
             ['coin', [194, 150, 14, 15]],
         ]);
     }
+
+    // Add inside MarioScene class
+setBricks(newBricks) {
+    this.bricks = newBricks;
+}
+
+setPipes(newPipes) {
+    this.pipes = newPipes;
+}
+
+setEnemies(newEnemies) {
+    this.enemies = newEnemies;
+}
 
     drawFrame(context, frameKey, x, y, direction = 1, scale = 1, alpha = 1) {
         const [sx, sy, sw, sh] = this.frames.get(frameKey);
@@ -333,6 +355,44 @@ export class MarioScene {
         for (const player of this.players) {
             player.update(time);
         }
+
+        if (this.mario.changeStage) {
+    // Clear & push new stage
+     this.bricks = this.bricks || [];
+        this.enemies = this.enemies || [];
+        this.pipes = this.pipes || [];
+            // Clear old arrays
+        this.bricks.length = 0;
+        this.enemies.length = 0;
+        this.pipes.length = 0;
+    
+    // Push new elements
+    this.bricks.push(
+        new Ground(this, 1, 176, 271, 31),
+        new Ground(this, 0, 0, 15, 176),
+        new Ground(this, 208, 145, 38, 30),
+        new Ground(this, 242, 0, 29, 177),
+    );
+    
+    this.enemies.push(
+      new KapNino(this, 120, 60)
+    );
+    
+    this.pipes.push(
+        new Pipe(this, 208, 145, 38, 30, {
+            stage: 'stagePipe',
+            width: 40,
+            destination: { x: 40, y: 50 },
+            music: document.querySelector('audio#music-underground'),
+        }),
+    );
+    
+    // Reset Mario
+    this.mario.position.x = 40;
+    this.mario.position.y = 50;
+    this.mario.resetVelocities();
+    this.mario.changeStage = false;
+}
 
          // Spawn SuperMan dynamically when Mario reaches x = 1500
     if (!this.superManSpawned && this.mario.position.x >= 700) {

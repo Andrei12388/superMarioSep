@@ -3,6 +3,9 @@ import { Control } from '../../constants/control.js';
 import * as control from '../../inputHandler.js';
 import { playSound } from '../../soundHandler.js';
 import { gameState } from '../../state/gameState.js';
+import { Ground } from './ground.js';
+import { KapNino } from './KapNino.js';
+import { Pipe } from './pipe.js';
 
 export class Mario {
     constructor(game, playerId = 0) {
@@ -15,7 +18,7 @@ export class Mario {
         this.ground = 207;
 
         // Position offset for player2
-        this.position = { x: 50 + playerId * 40, y: 200 };
+        this.position = { x: 900 + playerId * 40, y: 200 };
         this.direction = 1;
 
         this.enteringPipe = false;
@@ -363,6 +366,9 @@ handleDeath(time) {
 
     this.game.stageContext.frame = this.currentPipe?.options.stage || 'stage';
     this.game.stageContext.width = this.currentPipe?.options.width || 200;
+   
+    this.currentPipe.options.music.play();
+    
 
     this.changeStage = true;
 
