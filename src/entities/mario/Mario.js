@@ -15,7 +15,7 @@ export class Mario {
         this.ground = 207;
 
         // Position offset for player2
-        this.position = { x: 900 + playerId * 40, y: 200 };
+        this.position = { x: 2550 + playerId * 40, y: 200 };
         this.direction = 1;
 
         this.enteringPipe = false;
@@ -144,6 +144,7 @@ export class Mario {
 
         state.init(...args);
     }
+    
 
     // --- IDLE STATE ---
     handleIdleInit() {
@@ -350,9 +351,11 @@ handleDeath(time) {
     }
    
     this.game.stageMusic.pause();
-    this.velocity.x = 0;
-    this.velocity.y = 1.5;
+   
+   if(!this.enteringPipe) this.velocity.y = 1.5;
+  
     this.position.y += this.velocity.y;
+    if(this.enteringPipe) this.position.x += this.velocity.x;
 
     // after some frames → hide / teleport
  if (this.pipeTimer > 40) {

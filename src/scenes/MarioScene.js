@@ -75,6 +75,7 @@ export class MarioScene {
              new Pipe(this, 915, 144, 15, 64, {
                 stage: 'stagePipe',
                 width: 40,
+                direction: 'down',
                 destination: { x: 40, y: 50 },
                 music: document.querySelector('audio#music-underground'),
             }),
@@ -147,6 +148,28 @@ export class MarioScene {
             new Ground(this, 2283, 192, 16, 16),
             new Ground(this, 2235, 160, 32, 16),
             new Ground(this, 2235, 144, 16, 16),
+
+            new Ground(this, 2395, 160, 48, 48),
+            new Ground(this, 2411, 144, 32, 16),
+            new Ground(this, 2379, 176, 16, 32),
+            new Ground(this, 2363, 192, 16, 16),
+
+            new Ground(this, 2475, 160, 32, 48),
+            new Ground(this, 2475, 144, 16, 16),
+            new Ground(this, 2507, 176, 16, 32),
+            new Ground(this, 2523, 192, 16, 16),
+
+            //last section blocks
+            new Ground(this, 2971, 112, 64, 96),
+            new Ground(this, 3003, 80, 32, 32),
+            new Ground(this, 2955, 128, 16, 80),
+            new Ground(this, 2939, 144, 16, 64),
+            new Ground(this, 2907, 176, 32, 32),
+            new Ground(this, 2891, 192, 16, 16),
+            new Ground(this, 2923, 160, 16, 16),
+            new Ground(this, 2987, 96, 16, 16),
+
+            new Ground(this, 3163, 192, 16, 16),
 
             new Brick(this, 1888, 141),
             
@@ -227,14 +250,52 @@ setEnemies(newEnemies) {
     for (const player of this.players) {
         const playerBox = this.getPlayerPushBox(player);
 
-        const isOnTop =
-            playerBox.y + playerBox.height <= pipeBox.y + 5 &&
-            playerBox.x + playerBox.width > pipeBox.x &&
-            playerBox.x < pipeBox.x + pipeBox.width;
+// Player and pipe bounding boxes
+const playerLeft = playerBox.x;
+const playerRight = playerBox.x + playerBox.width;
+const playerTop = playerBox.y;
+const playerBottom = playerBox.y + playerBox.height;
 
-        if (isOnTop && player.onGround) {
+const pipeLeft = pipeBox.x;
+const pipeRight = pipeBox.x + pipeBox.width;
+const pipeTop = pipeBox.y;
+const pipeBottom = pipeBox.y + pipeBox.height;
+
+const sideTolerance = 5; // for side collisions
+
+// Collision checks
+
+// TOP collision (landing on pipe)
+const isOnTop =
+    playerBottom <= pipeTop + 5 && // small tolerance
+    playerRight > pipeLeft &&
+    playerLeft < pipeRight;
+
+// RIGHT side collision (player hits pipe from left → blocked on right side)
+const isNearRight =
+    playerLeft >= pipeRight - sideTolerance &&
+    playerLeft <= pipeRight + sideTolerance &&
+    playerBottom > pipeTop + 2 &&
+    playerTop < pipeBottom - 2;
+
+// LEFT side collision (player hits pipe from right → blocked on left side)
+const isNearLeft =
+    playerRight <= pipeLeft + sideTolerance &&
+    playerRight >= pipeLeft - sideTolerance &&
+    playerBottom > pipeTop + 2 &&
+    playerTop < pipeBottom - 2;
+
+// BOTTOM collision (player hits underside of pipe)
+const isUnder =
+    playerTop >= pipeBottom - 5 && // tolerance
+    playerLeft < pipeRight &&
+    playerRight > pipeLeft;
+
+   
+        if (isOnTop && player.onGround ) {
             // 👇 CHECK INPUT
-            if (control.isDown(player.playerId, 0)) {
+              player.currentPipe = pipe;
+            if (control.isDown(player.playerId, 0) && this.mario.currentPipe?.options.direction === 'down') {
                 
                 // lock movement
                 player.velocity.x = 0;
@@ -245,6 +306,41 @@ setEnemies(newEnemies) {
 
                 player.currentPipe = pipe;
             }
+        }
+          
+           if (isNearLeft && player.onGround) {
+              player.currentPipe = pipe;
+            if (control.isBackward(player.playerId, 0) && pipe.options.direction === 'right') {
+                // lock movement and start entering pipe
+                player.velocity.x = 1;
+                player.velocity.y = 0;
+                player.enteringPipe = true;
+                player.pipeTimer = 0;
+            }
+        
+        }
+             if (isNearRight && player.onGround) {
+              player.currentPipe = pipe;
+            if (control.isForward(player.playerId, 0) && pipe.options.direction === 'left') {
+                // lock movement and start entering pipe
+                player.velocity.x = -1;
+                player.velocity.y = 0;
+                player.enteringPipe = true;
+                player.pipeTimer = 0;
+            }
+        
+        }
+
+        if (isUnder) {
+              player.currentPipe = pipe;
+            if (control.isUp(player.playerId, 0) && player.velocity.y > 0 && pipe.options.direction === 'up') {
+                // lock movement and start entering pipe
+                player.velocity.x = 0;
+                player.velocity.y = -1;
+                player.enteringPipe = true;
+                player.pipeTimer = 0;
+            }
+        
         }
     }
 }
@@ -419,7 +515,7 @@ setEnemies(newEnemies) {
     );
     
     this.enemies.push(
-      new KapNino(this, 120, 60, 2),
+    //  new KapNino(this, 120, 60, 2),
 
     );
     
@@ -427,13 +523,14 @@ setEnemies(newEnemies) {
         new Pipe(this, 208, 145, 38, 30, {
             stage: 'stage',
             width: 200,
+            direction: 'right',
             destination: { x: 2610, y: 170 },
             music: document.querySelector('audio#music-ground'),
         }),
+        
     );
     
     // Reset Mario
-   
     this.mario.resetVelocities();
     this.mario.changeStage = false;
 }
@@ -461,6 +558,7 @@ setEnemies(newEnemies) {
              new Pipe(this, 915, 144, 15, 64, {
                 stage: 'stagePipe',
                 width: 40,
+                direction: 'down',
                 destination: { x: 40, y: 50 },
                 music: document.querySelector('audio#music-underground'),
             }),
@@ -551,6 +649,7 @@ setEnemies(newEnemies) {
         );
          // Reset Mario
     this.superManSpawned = false;
+   
     this.mario.resetVelocities();
     this.mario.changeStage = false;
 }
@@ -656,11 +755,11 @@ setEnemies(newEnemies) {
     drawEntities(context) {
         for (const brick of this.bricks) {
             brick.draw(context, this.stage);
-           // brick.drawDebug(context, this.stage);
+            brick.drawDebug(context, this.stage);
         }
            for (const pipe of this.pipes) {
            // pipe.draw(context, this.stage);
-           // pipe.drawDebug(context, this.stage);
+          //  pipe.drawDebug(context, this.stage);
         }
 
         for (const enemy of this.enemies) {
@@ -670,7 +769,7 @@ setEnemies(newEnemies) {
                 enemy.position.y - this.stage.y,
                 enemy.direction
             );
-           // enemy.drawDebug?.(context, this.stage);
+            enemy.drawDebug?.(context, this.stage);
         }
     }
 
@@ -695,7 +794,7 @@ setEnemies(newEnemies) {
                 player.position.y - this.stage.y,
                 player.direction
             );
-          //  player.drawDebug(context, this.stage);
+            player.drawDebug(context, this.stage);
         }
          // Draw bricks behind Mario
         this.drawEntities(context);
