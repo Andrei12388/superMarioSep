@@ -8,7 +8,11 @@ export class KapNino {
     constructor(game, x, y, speed = 0.5, direction = 1) {
         this.game = game;
          this.soundDead = document.querySelector('audio#sound-stomp');
-         this.soundKapDead = document.querySelector('audio#sound-kapDead');
+         if(gameState.explicitMode) {
+            this.soundKapDead = document.querySelector('audio#sound-kapDead');
+        } else {
+            this.soundKapDead = document.querySelector('audio#sound-kapDeadNonExplicit');
+        }
         // --- Constants & initial state ---
         this.ground = 207;
         this.maxSpeed = 1;
@@ -111,7 +115,7 @@ export class KapNino {
                )
            );
     playSound(this.soundDead, 1)
-    if(gameState.explicitMode) playSound(this.soundKapDead, 1)
+    playSound(this.soundKapDead, 1)
 
     gameState.mario.score += 100;
    

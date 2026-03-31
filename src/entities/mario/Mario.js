@@ -16,7 +16,7 @@ export class Mario {
         this.ground = 207;
 
         // Position offset for player2
-        this.position = { x: 30 + playerId * 40, y: 200 };
+        this.position = { x: 2600 + playerId * 40, y: 200 };
         this.direction = 1;
 
         this.powerType = null;
@@ -192,7 +192,7 @@ export class Mario {
     }
 
     handleGunShootState(time) {
-      
+       this.handleHorizontalCollisions();
     }
     
     handleWalkEndInit(){
@@ -260,8 +260,16 @@ export class Mario {
         return;
     }
 
+     if (this.isPoweredUp && control.isLightKick(this.playerId)) {
+        this.changeState(FighterState.GUNSHOOT, 'GunShoot');
+        return;
+    }
+
     // Jump
     if (control.isHeavyKick(this.playerId) && this.onGround) {
+        this.velocity.y = -this.jumpForce;
+        playSound(this.soundJump, 1);
+    } else  if (control.isHeavyPunch(this.playerId) && this.onGround) {
         this.velocity.y = -this.jumpForce;
         playSound(this.soundJump, 1);
     }
@@ -297,6 +305,9 @@ export class Mario {
 
     handleWalkForwardState() {
          if (this.isPoweredUp && control.isLightPunch(this.playerId)) {
+        this.changeState(FighterState.GUNSHOOT, 'GunShoot');
+        return;
+    }   if (this.isPoweredUp && control.isLightKick(this.playerId)) {
         this.changeState(FighterState.GUNSHOOT, 'GunShoot');
         return;
     }
@@ -340,10 +351,19 @@ export class Mario {
             const jumpForce = isRunning ? this.runJumpForce : this.jumpForce;
             this.velocity.y = -jumpForce;
         }
+         if (control.isHeavyPunch(this.playerId) && this.onGround) {
+            playSound(this.soundJump, 1)
+            const jumpForce = isRunning ? this.runJumpForce : this.jumpForce;
+            this.velocity.y = -jumpForce;
+        }
     }
 
     handleWalkBackwardState() {
          if (this.isPoweredUp && control.isLightPunch(this.playerId)) {
+        this.changeState(FighterState.GUNSHOOT, 'GunShoot');
+        return;
+    } 
+      if (this.isPoweredUp && control.isLightKick(this.playerId)) {
         this.changeState(FighterState.GUNSHOOT, 'GunShoot');
         return;
     }
@@ -387,6 +407,11 @@ export class Mario {
             const jumpForce = isRunning ? this.runJumpForce : this.jumpForce;
             this.velocity.y = -jumpForce;
         } 
+          if (control.isHeavyPunch(this.playerId) && this.onGround) {
+            playSound(this.soundJump, 1)
+            const jumpForce = isRunning ? this.runJumpForce : this.jumpForce;
+            this.velocity.y = -jumpForce;
+        }
     }
 
     // --- BOXES ---
@@ -449,6 +474,41 @@ handleDeath(time) {
     }
 }
 
+handleHorizontalCollisions() {
+    for (const brick of this.game.bricks) {
+        if (brick.isBroken) continue;
+
+        const brickBox = brick.getWorldBox();
+        const pushBox = {
+            x: this.position.x + this.boxes.push.x,
+            y: this.position.y + this.boxes.push.y,
+            width: this.boxes.push.width,
+            height: this.boxes.push.height,
+        };
+
+        const verticallyOverlapping =
+            pushBox.y + pushBox.height > brickBox.y &&
+            pushBox.y < brickBox.y + brickBox.height;
+
+        if (!verticallyOverlapping) continue;
+
+        if (this.velocity.x > 0 &&
+            pushBox.x + pushBox.width > brickBox.x &&
+            pushBox.x < brickBox.x) {
+
+            this.position.x = brickBox.x - pushBox.width - this.boxes.push.x;
+            this.velocity.x = 0;
+        }
+        else if (this.velocity.x < 0 &&
+            pushBox.x < brickBox.x + brickBox.width &&
+            pushBox.x + pushBox.width > brickBox.x + brickBox.width) {
+
+            this.position.x = brickBox.x + brickBox.width - this.boxes.push.x;
+            this.velocity.x = 0;
+        }
+    }
+}
+
     // --- PHYSICS & UPDATE ---
    update(time) {
     // 🚨 FLAG AUTO WALK OVERRIDE
@@ -479,6 +539,8 @@ if (this.autoWalk) {
     this.velocity.y = 0;
     return; // 🚨 stop ALL normal logic
 }
+// AFTER position.x += velocity.x
+this.handleHorizontalCollisions();
    if (this.enteringPipe) {
     this.pipeTimer++;
 
@@ -843,6 +905,7 @@ this.game.bullets.push(bullet);
    die() {
     if (this.isDead) return;
     this.game.stageMusic.pause();
+    document.querySelector('audio#music-warning').pause();
     this.gameOver.currentTime = 0;
     playSound(this.gameOver, 1);
     gameState.mario.lives--;

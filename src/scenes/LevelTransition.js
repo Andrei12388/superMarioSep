@@ -8,6 +8,8 @@ export class LevelTransition {
     constructor(game, options = {}) {
         this.game = game;
         this.image = document.querySelector('img[alt="mario"]');
+        document.querySelector('audio#sound-kapNinoBoss').pause();
+        document.querySelector('audio#sound-kapNinoBossNonExplicit').pause();
         this.gameOverMusic = document.querySelector('audio#music-gameOverTransition');
         if(gameState.mario.lives <= -1) {
             this.gameOverMusic.play();

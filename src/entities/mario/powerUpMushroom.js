@@ -131,8 +131,8 @@ export class PowerUpMushRoom {
         );
 
         // Optional debug box
-         context.strokeStyle = 'red';
-         const box = this.getWorldBox();
-         context.strokeRect(box.x - stage.x, box.y - stage.y, box.width, box.height);
+        // context.strokeStyle = 'red';
+        // const box = this.getWorldBox();
+        // context.strokeRect(box.x - stage.x, box.y - stage.y, box.width, box.height);
     }
 }

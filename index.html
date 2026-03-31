@@ -690,8 +690,8 @@ top: 40vh;
           step="10"
         />
       </div>
-      
- <button id="editLayoutBtn" style="
+      <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px;">
+<button id="editLayoutBtn" style="
     display:block;
   
     padding:10px 20px;
@@ -703,6 +703,20 @@ top: 40vh;
     cursor:pointer;
     box-shadow:0 0 10px #40ff00;
 ">Edit Layout</button>
+<button id="toggleExplicitBtn"  style="
+    display:block;
+  
+    padding:10px 20px;
+    font-size:16px;
+    background-color:#40ff00;
+    color:black;
+    border:2px solid #40ff00;
+    border-radius:6px;
+    cursor:pointer;
+    box-shadow:0 0 10px #40ff00;
+">Explicit: Off</button>
+      </div>
+ 
 
     </div>
     </div>
@@ -849,6 +863,13 @@ document.getElementById('editLayoutBtn').addEventListener('click', () => {
     preload="auto" 
     ></audio> 
 
+      <audio 
+    id="music-warning" 
+    src="./sounds/music-warning.mp3" 
+    preload="auto" 
+    loop
+    ></audio> 
+
      <audio 
     id="music-levelFinished" 
     src="./sounds/smb_stage_clear.wav" 
@@ -969,6 +990,24 @@ document.getElementById('editLayoutBtn').addEventListener('click', () => {
      <audio 
     id="sound-gunShot" 
     src="./sounds/gunShot.ogg" 
+    preload="auto" 
+    ></audio> 
+
+     <audio 
+    id="sound-kapDeadNonExplicit" 
+    src="./sounds/kapDeadNonExplicit.ogg" 
+    preload="auto" 
+    ></audio> 
+
+     <audio 
+    id="sound-kapNinoBoss" 
+    src="./sounds/kapNinoBoss.ogg" 
+    preload="auto" 
+    ></audio> 
+
+     <audio 
+    id="sound-kapNinoBossNonExplicit" 
+    src="./sounds/kapNinoBossNonExplicit.ogg" 
     preload="auto" 
     ></audio> 
 

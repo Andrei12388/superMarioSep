@@ -481,6 +481,23 @@ document.getElementById('editLayoutBtn').addEventListener('click', (e) => {
     else alert('Layout edit active. Use 💾 Save Layout to finish.');
 });
 
+const toggleExplicitBtn = document.getElementById('toggleExplicitBtn');
+
+window.addEventListener('load', () => {
+    toggleExplicitBtn.textContent = `⚠️Explicit: ${gameState.explicitMode ? 'On' : 'Off'}`;
+});
+
+toggleExplicitBtn.addEventListener('click', () => {
+    // Toggle the value
+    gameState.explicitMode = !gameState.explicitMode;
+
+    // Update button text
+    toggleExplicitBtn.textContent = `⚠️Explicit: ${gameState.explicitMode ? 'On' : 'Off'}`;
+
+    // Optional: show notice
+    showNotice(`⚠️Explicit mode ${gameState.explicitMode ? 'enabled ✅' : 'disabled ❌'}`);
+});
+
 // Attach Save Layout button
 createSaveLayoutBtn().addEventListener('click', () => {
     disableLayoutEdit();

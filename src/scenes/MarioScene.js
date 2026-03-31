@@ -24,6 +24,10 @@ export class MarioScene {
         this.stageMusic = document.querySelector('audio#music-ground');
         this.stageMusic.currentTime = 0;
         gameState.mario.time = 400;
+        gameState.hordekillCount = 0;
+        if(gameState.explicitMode) this.soundKapNinoBoss = document.querySelector('audio#sound-kapNinoBoss');
+        else this.soundKapNinoBoss = document.querySelector('audio#sound-kapNinoBossNonExplicit');
+        this.soundKapNinoBoss.currentTime = 0;
 
         this.cameraLock = false;
         this.cameraLockDone = false;
@@ -76,12 +80,12 @@ export class MarioScene {
         this.mario = this.players[0];
 
         this.setEnemies([
-            new KapNino(this, 400, 150),
-            new KapNino(this, 440, 150),
+           new KapNino(this, 400, 150,0.5, -1),
+            new KapNino(this, 440, 150,0.5, -1),
             new CloudEnemy(this, 470, 100),
           //  new SuperMan(this, 2000, 50),
-            new KapNino(this, 682, 150),
-            new KapNino(this, 656, 150),
+            new KapNino(this, 682, 150,0.5, -1),
+            new KapNino(this, 656, 150,0.5, -1),
 
         ]);
 
@@ -138,6 +142,7 @@ export class MarioScene {
 
             //ground
             new Ground(this, 0, 208, 1100, 16),
+            new Ground(this, -16, 0, 16, 208),
             new Ground(this, 1131, 208, 240, 16),
             new Ground(this, 1419, 208, 1024, 16),
             new Ground(this, 2475, 208, 1105, 16),
@@ -183,7 +188,7 @@ export class MarioScene {
             new Ground(this, 2923, 160, 16, 16),
             new Ground(this, 2987, 96, 16, 16),
 
-             new SecretBlock(this, 2720,141,{
+             new SecretBlock(this, 2565,141,{
                 type: 'powerup',
                 power: 'gunPowerup'
             }),
@@ -198,10 +203,10 @@ export class MarioScene {
             new Brick(this, 2062, 141),
             new Brick(this, 2078, 141),
 
-            new Brick(this, 2688, 141),
             new Brick(this, 2704, 141),
-            
+            new Brick(this, 2720, 141),
             new Brick(this, 2736, 141),
+            new Brick(this, 2752, 141),
 
         ]);
         
@@ -466,11 +471,20 @@ const isUnder =
 updateHorde(time) {
     this.hordeTimer += time.secondsPassed;
 
-    if (this.hordeCount >= 10 || gameState.hordekillCount >= 5) this.cameraLock = false;
+    if (gameState.hordekillCount >= 25) {
+        this.stageMusic.play();
+        document.querySelector('audio#music-warning').pause();
+        this.soundKapNinoBoss.pause();
+        this.cameraLock = false;
+        gameState.hordeActive = false;
+    }
 
     if (this.hordeTimer >= this.hordeInterval) {
         this.hordeTimer = 0;
-        this.hordeInterval = Math.random() * 2 + 2; // reset AFTER trigger
+
+        // Random interval between 1–3 seconds
+        this.hordeInterval = Math.random() * 2 + 1;
+
         this.hordeCount++;
 
         // Randomly pick left or right
@@ -486,12 +500,15 @@ updateHorde(time) {
             );
         }
 
-        console.log("Enemy spawned:", spawnSide);
+        console.log("Enemy spawned:", spawnSide, "Next spawn in", this.hordeInterval.toFixed(2), "s");
     }
 }
 
     update(time) {
-        if(this.cameraLock) this.updateHorde(time);
+        if(this.cameraLock){
+             this.updateHorde(time);
+             gameState.hordeActive = true;
+        }
         if (gameState.changeScene) this.game.setScene(new LevelTransition(this.game));
         if(gameState.levelFinished) {
             this.enemies.length = 0;
@@ -594,12 +611,12 @@ updateHorde(time) {
         this.pipes.length = 0;
 
         this.enemies.push(
-            new KapNino(this, 400, 150),
-            new KapNino(this, 440, 150),
+           new KapNino(this, 400, 150,0.5, -1),
+            new KapNino(this, 440, 150,0.5, -1),
             new CloudEnemy(this, 470, 100),
           //  new SuperMan(this, 2000, 50),
-            new KapNino(this, 682, 150),
-            new KapNino(this, 656, 150),
+            new KapNino(this, 682, 150,0.5, -1),
+            new KapNino(this, 656, 150,0.5, -1),
         );
 
         this.pipes.push(
@@ -712,13 +729,14 @@ updateHorde(time) {
             new Brick(this, 2062, 141),
             new Brick(this, 2078, 141),
 
-            new Brick(this, 2688, 141),
             new Brick(this, 2704, 141),
-            new SecretBlock(this, 2720,141,{
+            new Brick(this, 2720, 141),
+            new SecretBlock(this, 2565,141,{
                 type: 'powerup',
                 power: 'gunPowerup'
             }),
             new Brick(this, 2736, 141),
+            new Brick(this, 2752, 141),
         );
 
         this.debris.push(new FlagPole(this, 3163, 40));
@@ -880,6 +898,13 @@ const rightBoundary = canvasWidth * 2 / 3;
 // === CAMERA LOCK TRIGGER ===
 if (!this.cameraLock && activePlayer.position.x >= 2730 && !this.cameraLockDone) {
     this.cameraLock = true;
+     
+    this.stageMusic.pause();
+    document.querySelector('audio#music-warning').currentTime = 0;
+    document.querySelector('audio#music-warning').play();
+    document.querySelector('audio#sound-kapNinoBoss').currentTime = 0;
+    this.soundKapNinoBoss.play();
+
     this.cameraLockDone = true;
     // lock camera at current stage.x or far right if desired
     this.lockedStageX = 2550; 
@@ -909,9 +934,15 @@ if (!this.cameraLock) {
     }
 
     drawEntities(context) {
+        if(this.cameraLock) {
+             context.font = "11px MarioFont";
+            context.fillStyle = "white";
+            context.fillText(`HORDE! Kill all Kap Ninos!`, 50, 90);
+            context.fillText(`Kill: ${gameState.hordekillCount}/25`, 50, 105);
+        }
         for (const brick of this.bricks) {
             brick.draw(context, this.stage);
-            brick.drawDebug(context, this.stage);
+          //  brick.drawDebug(context, this.stage);
         }
            for (const pipe of this.pipes) {
            // pipe.draw(context, this.stage);
@@ -920,7 +951,7 @@ if (!this.cameraLock) {
 
          for (const bullet of this.bullets) {
             bullet.draw(context, this.stage);
-            bullet.drawDebug(context, this.stage);
+          //  bullet.drawDebug(context, this.stage);
         }
 
         for (const enemy of this.enemies) {
@@ -930,7 +961,7 @@ if (!this.cameraLock) {
                 enemy.position.y - this.stage.y,
                 enemy.direction
             );
-            enemy.drawDebug?.(context, this.stage);
+          //  enemy.drawDebug?.(context, this.stage);
         }
     }
 
@@ -944,8 +975,6 @@ if (!this.cameraLock) {
         224,
     );
         this.drawFrame(context, this.stageContext.frame, -this.stage.x, -this.stage.y);
-
-       
 
         // Draw players
         for (const player of this.players) {
