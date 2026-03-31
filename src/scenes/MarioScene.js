@@ -4,6 +4,7 @@ import { CloudEnemy } from '../entities/mario/cloudEnemy.js';
 import { Ground } from '../entities/mario/ground.js';
 import { KapNino } from '../entities/mario/KapNino.js';
 import { Mario } from '../entities/mario/Mario.js';
+import { Pipe } from '../entities/mario/pipe.js';
 import { SecretBlock } from '../entities/mario/secretBlock.js';
 import { SuperMan } from '../entities/mario/superMan.js';
 import * as control from '../inputHandler.js';
@@ -21,6 +22,12 @@ export class MarioScene {
         this.stageMusic = document.querySelector('audio#music-ground');
         this.stageMusic.currentTime = 0;
         gameState.mario.time = 400;
+
+        this.stageContext = {
+            frame: 'stage',
+            width: 200,
+        }
+        
 
         this.superManSpawned = false;
        
@@ -47,9 +54,21 @@ export class MarioScene {
         this.enemies = [
             new KapNino(this, 400, 150),
             new KapNino(this, 440, 150),
-            new CloudEnemy(this, 470, 150),
+            new CloudEnemy(this, 470, 100),
           //  new SuperMan(this, 2000, 50),
+            new KapNino(this, 682, 150),
+            new KapNino(this, 656, 150),
         ];
+
+        this.pipes = [
+             new Pipe(this, 915, 144, 15, 64, {
+                stage: 'stagePipe',
+                width: 40,
+                destination: { x: 40, y: 50 }
+            }),
+        ];
+
+
 
         this.bricks = [
             new Brick(this, 320, 141),
@@ -102,7 +121,9 @@ export class MarioScene {
             new Ground(this, 442, 175, 34, 30),
             new Ground(this, 602, 160, 32, 48),
             new Ground(this, 731, 144, 31, 64),
+
             new Ground(this, 907, 144, 31, 64),
+
             new Ground(this, 2602, 176, 32, 32),
             new Ground(this, 2857, 176, 32, 32),
 
@@ -136,6 +157,7 @@ export class MarioScene {
         
         this.frames = new Map([
             ['stage', [5, 0, 3584, 480]],
+            ['stagePipe', [2368, 272, 272, 208]],
             ['coin', [194, 150, 14, 15]],
         ]);
     }
@@ -175,6 +197,34 @@ export class MarioScene {
     updateEntities(time) {
         // Update bricks
         for (const brick of this.bricks) brick.update(time);
+
+        for (const pipe of this.pipes) {
+    const pipeBox = pipe.getWorldBox();
+
+    for (const player of this.players) {
+        const playerBox = this.getPlayerPushBox(player);
+
+        const isOnTop =
+            playerBox.y + playerBox.height <= pipeBox.y + 5 &&
+            playerBox.x + playerBox.width > pipeBox.x &&
+            playerBox.x < pipeBox.x + pipeBox.width;
+
+        if (isOnTop && player.onGround) {
+            // 👇 CHECK INPUT
+            if (control.isDown(player.playerId, 0)) {
+                
+                // lock movement
+                player.velocity.x = 0;
+                player.velocity.y = 1;
+
+                player.enteringPipe = true;
+                player.pipeTimer = 0;
+
+                player.currentPipe = pipe;
+            }
+        }
+    }
+}
 
         // Reset player ground flags
         for (const player of this.players) {
@@ -227,6 +277,8 @@ export class MarioScene {
                 }
             }
         }
+
+        
 
         // Player vs player bumping (no damage/death from collisions)
         for (let i = 0; i < this.players.length; i++) {
@@ -361,8 +413,8 @@ export class MarioScene {
 
         // Stage scrolling (follow first active player)
         var activePlayer = this.players.find(function(p) { return !p.isDead; }) || this.players[0];
-        var canvasWidth = 200;
-        var stageWidth = this.frames.get('stage')[2];
+        var canvasWidth = this.stageContext.width || 200; // default to 200 if not set
+        var stageWidth = this.frames.get(this.stageContext.frame)[2];
         var leftBoundary = canvasWidth / 3;
         var rightBoundary = canvasWidth * 2 / 3;
 
@@ -384,6 +436,10 @@ export class MarioScene {
             brick.draw(context, this.stage);
             brick.drawDebug(context, this.stage);
         }
+           for (const pipe of this.pipes) {
+           // pipe.draw(context, this.stage);
+           // pipe.drawDebug(context, this.stage);
+        }
 
         for (const enemy of this.enemies) {
             enemy.drawFrame(
@@ -398,10 +454,16 @@ export class MarioScene {
 
     draw(context) {
         // Draw stage
-        this.drawFrame(context, 'stage', -this.stage.x, -this.stage.y);
+        context.fillStyle = 'black';
+    context.fillRect(
+       0,
+        0,
+        400,
+        224,
+    );
+        this.drawFrame(context, this.stageContext.frame, -this.stage.x, -this.stage.y);
 
-        // Draw bricks behind Mario
-        this.drawEntities(context);
+       
 
         // Draw players
         for (const player of this.players) {
@@ -411,10 +473,13 @@ export class MarioScene {
                 player.position.y - this.stage.y,
                 player.direction
             );
-           // player.drawDebug(context, this.stage);
+            player.drawDebug(context, this.stage);
         }
+         // Draw bricks behind Mario
+        this.drawEntities(context);
 
         this.debris.forEach(d => d.draw(context, this.stage));
+        
         this.scoreTexts.forEach(t => t.draw(context, this.stage));
         drawText(context, this.imageUI, this.frames);
      

@@ -18,6 +18,14 @@ export class Mario {
         this.position = { x: 50 + playerId * 40, y: 200 };
         this.direction = 1;
 
+        this.enteringPipe = false;
+        this.pipeSoundPlay = false;
+        this.pipeTimer = 0;
+        this.changeStage = false;
+        this.currentPipe = null;
+
+        this.visible = true;
+
         this.maxSpeed = 1.1;
         this.acceleration = 0.1;
         this.friction = 0.1;
@@ -332,6 +340,49 @@ handleDeath(time) {
 
     // --- PHYSICS & UPDATE ---
    update(time) {
+   if (this.enteringPipe) {
+    this.pipeTimer++;
+
+    // move Mario down slowly into pipe
+    if(!this.pipeSoundPlay) {
+        document.querySelector('audio#sound-powerDown').play();
+        this.pipeSoundPlay = true;
+    }
+   
+    this.game.stageMusic.pause();
+    this.velocity.x = 0;
+    this.velocity.y = 1.5;
+    this.position.y += this.velocity.y;
+
+    // after some frames → hide / teleport
+ if (this.pipeTimer > 40) {
+    this.visible = false;
+
+    this.position.x = this.currentPipe.options.destination.x;
+    this.position.y = this.currentPipe.options.destination.y;
+
+    this.game.stageContext.frame = this.currentPipe?.options.stage || 'stage';
+    this.game.stageContext.width = this.currentPipe?.options.width || 200;
+
+    this.changeStage = true;
+
+    // ✅ RESET EVERYTHING IMPORTANT
+    this.enteringPipe = false;
+    this.pipeTimer = 0;
+    this.pipeSoundPlay = false;
+
+    this.visible = true;
+
+    this.resetVelocities();        // 🔥 VERY IMPORTANT
+    this.onGround = false;         // will be recalculated next frame
+
+    this.changeState(FighterState.IDLE); // 🔥 reset FSM
+
+    this.currentPipe = null;       // cleanup reference
+}
+
+    return; // 🚨 stop ALL other logic
+}
     if (this.isDead) {
     this.handleDeath(time);
     return; // stop ALL normal logic
@@ -339,6 +390,8 @@ handleDeath(time) {
     if(this.position.y > 275) {
         this.die();
     }
+    
+
     // --- Apply horizontal friction ALWAYS ---
 if (!control.isForward(this.playerId, 1) && !control.isBackward(this.playerId, 1)) {
     if (this.velocity.x > 0) {
@@ -477,9 +530,10 @@ if (this.animationTimer >= 10) {
         context.restore();
     }
 
-    draw(context) {
-        this.drawFrame(context, this.position.x, this.position.y, this.direction);
-    }
+   draw(context) {
+    if (!this.visible) return; // 👈 hide Mario completely
+    this.drawFrame(context, this.position.x, this.position.y, this.direction);
+}
 
     drawDebug(context, stageOffset = { x: 0, y: 0 }, scale = 1) {
         const { push, hurt } = this.boxes;

@@ -8,7 +8,8 @@ export class CloudEnemy {
     constructor(game, x, y) {
         this.game = game;
          this.soundDead = document.querySelector('audio#sound-stomp');
-         this.soundKapDead = document.querySelector('audio#sound-kapDead');
+         this.soundCloudEnemy = document.querySelector('audio#sound-cloudEnemy');
+        
         // --- Constants & initial state ---
         this.ground = 207;
         this.maxSpeed = 1;
@@ -112,7 +113,7 @@ export class CloudEnemy {
                )
            );
     playSound(this.soundDead, 1)
-    playSound(this.soundKapDead, 1)
+    this.soundCloudEnemy.pause();
 
     gameState.mario.score += 100;
    
@@ -176,7 +177,7 @@ this.moveTimer += time.secondsPassed;
 if (this.moveTimer >= this.moveDuration) {
     // randomly pick left or right
     this.direction = Math.random() < 0.5 ? -1 : 1;
-
+     this.soundCloudEnemy.play();
     // reset timer
     this.moveTimer = 0;
     this.moveDuration = Math.random() * 2 + 1; // new random duration

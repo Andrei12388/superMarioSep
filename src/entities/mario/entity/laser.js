@@ -5,6 +5,10 @@ export class Laser {
     constructor(game, x, y, angle = 0, speed = 4) {
         this.game = game;
 
+        this.soundLaser = document.querySelector('audio#sound-laserBeam');
+        this.soundLaser.volume = 0.7;
+        this.soundLaser.play();
+
         this.ground = 207;
         this.gravity = 0; // no gravity for laser
         this.isDead = false;
