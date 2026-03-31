@@ -58,6 +58,15 @@ export class Mario {
 
         // --- Animation & frames ---
         this.frames = new Map([
+             ['gunBullet', [
+                [[300, 467, 17, 6], [8, 4], { push: [-2, -8, 8, 6], hurt: [-2, -8, 8, 6],  }],
+            ]],
+            ['gunSmoke', [
+                [[298, 439, 30, 18], [15, 16], { push: [0, 0, 0, 0], hurt: [0, 0, 0, 0], }],
+                [[331, 436, 34, 21], [17, 19], { push: [0, 0, 0, 0], hurt: [0, 0, 0, 0], }],
+                [[373, 429, 29, 31], [15, 29], { push: [0, 0, 0, 0], hurt: [0, 0, 0, 0], }],
+                [[413, 431, 20, 29], [10, 15], { push: [0, 0, 0, 0], hurt: [0, 0, 0, 0], }],
+            ]],
             ['idleSmall', [
                 [[131, 63, 31, 30], [15, 28], { push: [-2, -30, 12, 30], hurt: [-2, -30, 12, 30] }]
             ]],
@@ -725,33 +734,156 @@ if (control.isBackward(this.playerId, 1)) {
         this.changeState(FighterState.IDLE, 'idleSmall');
     }
 
+    createSmoke(x, y, direction = 1) {
+    const frames = 10; // number of smoke particles
+    for (let i = 0; i < frames; i++) {
+        this.game.debris.push({
+            position: { x, y },
+            velocity: { 
+                x: (Math.random() - 0.5) * 1 + direction * 0.5, 
+                y: -Math.random() * 1.5 
+            },
+            life: 30 + Math.floor(Math.random() * 20),
+            size: 2 + Math.random() * 4,
+            alpha: 1,
+            update() {
+                this.position.x += this.velocity.x;
+                this.position.y += this.velocity.y;
+                this.alpha -= 0.03;
+                this.life--;
+                if (this.life <= 0 || this.alpha <= 0) this.markedForDeletion = true;
+            },
+            draw(ctx, stage) {
+                ctx.save();
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = 'rgb(76, 70, 70)'; // light gray smoke
+                ctx.beginPath();
+                ctx.arc(this.position.x - stage.x, this.position.y - stage.y, this.size / 2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            }
+        });
+    }
+}
+
    shoot() {
-    console.log("PEW!");
-
-    // Compute the origin of the bullet based on Mario's direction
-    const bulletOffsetX = this.direction === 1 ? 22 : -22; // tweak these for your sprite
+    const bulletOffsetX = this.direction === 1 ? 22 : -22;
     const bulletOriginX = this.position.x + bulletOffsetX;
-    const bulletOriginY = this.position.y - 25; // keep your vertical offset
+    const bulletOriginY = this.position.y - 25;
 
+    const mario = this;
+    playSound(document.querySelector('audio#sound-gunShot'), 1);
+
+    // 🔥 Smoke animation
     this.game.debris.push({
-        position: { x: bulletOriginX, y: bulletOriginY },
-        velocity: { x: 3 * this.direction, y: 0 }, // positive = right, negative = left
-        life: 60,
+        position: { x: bulletOriginX + 10*this.direction , y: bulletOriginY+7 },
+        frameIndex: 0,
+        frameTimer: 0,
+
         update() {
-            this.position.x += this.velocity.x;
-            this.life--;
-            if (this.life <= 0) this.markedForDeletion = true;
+            this.frameTimer++;
+            if (this.frameTimer >= 5) {
+                this.frameTimer = 0;
+                this.frameIndex++;
+            }
+
+            if (this.frameIndex >= mario.frames.get('gunSmoke').length) {
+                this.markedForDeletion = true;
+            }
         },
+
         draw(ctx, stage) {
-            ctx.fillStyle = 'yellow';
-            ctx.fillRect(
-                this.position.x - stage.x,
-                this.position.y - stage.y,
-                4,
-                2
-            );
+            const frames = mario.frames.get('gunSmoke');
+            const frame = frames[this.frameIndex];
+            if (!frame) return;
+
+            const [[sx, sy, sw, sh], [ox, oy]] = frame;
+
+            ctx.save();
+
+            if (mario.direction === 1) {
+                // Flip horizontally
+                ctx.scale(-1, 1);
+                ctx.drawImage(
+                    mario.image,
+                    sx, sy, sw, sh,
+                    -((this.position.x - stage.x) + sw - ox), // flip X
+                    (this.position.y - stage.y) - oy,
+                    sw,
+                    sh
+                );
+            } else {
+                ctx.drawImage(
+                    mario.image,
+                    sx, sy, sw, sh,
+                    (this.position.x - stage.x) - ox,
+                    (this.position.y - stage.y) - oy,
+                    sw,
+                    sh
+                );
+            }
+
+            ctx.restore();
         }
     });
+
+ 
+   // 🔫 Bullet debris
+this.game.debris.push({
+    position: { x: bulletOriginX, y: bulletOriginY },
+    frameIndex: 0,
+    frameTimer: 0,
+    direction: this.direction,
+    speed: 4, // bullet horizontal speed
+    update() {
+        this.position.x += this.speed * this.direction;
+
+        this.frameTimer++;
+        if (this.frameTimer >= 5) {
+            this.frameTimer = 0;
+            this.frameIndex++;
+        }
+
+        if (this.frameIndex >= mario.frames.get('gunBullet').length) {
+            this.frameIndex = 0; // loop if you want animation, or remove if single frame
+        }
+
+        // Optional: remove bullet if offscreen
+        if (this.position.x < 0 || this.position.x > 4000) { 
+            this.markedForDeletion = true;
+        }
+    },
+    draw(ctx, stage) {
+        const frames = mario.frames.get('gunBullet');
+        const frame = frames[this.frameIndex];
+        if (!frame) return;
+
+        const [[sx, sy, sw, sh], [ox, oy]] = frame;
+
+        ctx.save();
+        if (this.direction === -1) {
+            ctx.scale(-1, 1);
+            ctx.drawImage(
+                mario.image,
+                sx, sy, sw, sh,
+                -((this.position.x - stage.x) + sw - ox), // flip X
+                (this.position.y - stage.y) - oy,
+                sw,
+                sh
+            );
+        } else {
+            ctx.drawImage(
+                mario.image,
+                sx, sy, sw, sh,
+                (this.position.x - stage.x) - ox,
+                (this.position.y - stage.y) - oy,
+                sw,
+                sh
+            );
+        }
+        ctx.restore();
+    }
+});
 }
 
    die() {
