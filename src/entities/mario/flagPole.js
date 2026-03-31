@@ -19,7 +19,7 @@ this.flagBottomOffset = 16; // tweak this value
 
         this.isActivated = false;
         this.flagY = y+6; // flag position
-        this.slideSpeed = 0.5;
+        this.slideSpeed = 0.8;
 
         // Horizontal sway
 this.baseX = x;        // original X position

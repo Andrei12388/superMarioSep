@@ -2,6 +2,7 @@
 import { playSound } from '../../soundHandler.js';
 import { gameState } from '../../state/gameState.js';
 import { CoinPop } from './coinPop.js';
+import { GunPowerUp } from './GunPowerUp.js';
 import { PowerUpMushRoom } from './powerUpMushroom.js';
 export class SecretBlock {
     constructor(game, x, y, config = {}) {
@@ -112,6 +113,14 @@ spawnPowerUp() {
     switch (this.config.power) {
         case 'mushroom':
             powerUp = new PowerUpMushRoom(
+                this.game,
+                this.position.x,
+                this.position.y - 16, // at top of the block
+                this
+            );
+            break;
+         case 'gunPowerup':
+            powerUp = new GunPowerUp(
                 this.game,
                 this.position.x,
                 this.position.y - 16, // at top of the block

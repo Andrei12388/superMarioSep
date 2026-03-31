@@ -112,6 +112,9 @@ export const gameState = {
     stage: 'stage',
     world: 1,
     level: 1,
+    explicitMode: false,
     changeScene: false,
     levelFinished: false,
+    hordeActive: false,
+    hordekillCount: 0,
 };

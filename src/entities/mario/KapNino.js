@@ -5,7 +5,7 @@ import { gameState } from '../../state/gameState.js';
 import { ScoreText } from './scoreText.js';
 
 export class KapNino {
-    constructor(game, x, y, speed = 0.5) {
+    constructor(game, x, y, speed = 0.5, direction = 1) {
         this.game = game;
          this.soundDead = document.querySelector('audio#sound-stomp');
          this.soundKapDead = document.querySelector('audio#sound-kapDead');
@@ -23,7 +23,7 @@ export class KapNino {
         this.deathDuration = 1; // 1 second
         this.remove = false;
 
-        this.direction = 1; // 1 = right, -1 = left
+        this.direction = direction; // 1 = right, -1 = left
         this.velocity = { x: 0, y: 0 };
         this.position = { x: x, y: y };
 
@@ -87,7 +87,7 @@ export class KapNino {
 
     // --- IDLE STATE ---
     handleIdleInit() {
-        this.direction = -1;
+       
         this.currentAnimationKey = 'idle';
     }
 
@@ -100,6 +100,7 @@ export class KapNino {
 
        // --- dead STATE ---
    handleDeadInit() {
+    if(gameState.hordeActive) gameState.hordekillCount++;
     console.log("Dead enemy");
     this.game.scoreTexts.push(
                new ScoreText(
@@ -110,7 +111,7 @@ export class KapNino {
                )
            );
     playSound(this.soundDead, 1)
-    playSound(this.soundKapDead, 1)
+    if(gameState.explicitMode) playSound(this.soundKapDead, 1)
 
     gameState.mario.score += 100;
    

@@ -212,6 +212,7 @@ export const FighterId = {
 export const FighterState = {
 IDLE: 'idle',
 GROW: 'grow',
+GUNSHOOT: 'gunShoot',
 DEAD: 'dead',
 WALKEND: 'walkEnd',
 

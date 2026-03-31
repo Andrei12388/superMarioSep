@@ -25,6 +25,14 @@ export class MarioScene {
         this.stageMusic.currentTime = 0;
         gameState.mario.time = 400;
 
+        this.cameraLock = false;
+        this.cameraLockDone = false;
+
+        this.hordeTimer = 0;
+        this.hordeCount = 0;
+        this.hordeInterval = 3; // seconds
+        this.hordeSpawnSide = 'left'; // or true/false
+
         this.stageContext = {
             frame: 'stage',
             width: 200,
@@ -73,6 +81,7 @@ export class MarioScene {
           //  new SuperMan(this, 2000, 50),
             new KapNino(this, 682, 150),
             new KapNino(this, 656, 150),
+
         ]);
 
         this.setPipes([
@@ -173,7 +182,12 @@ export class MarioScene {
             new Ground(this, 2923, 160, 16, 16),
             new Ground(this, 2987, 96, 16, 16),
 
-            new Ground(this, 3163, 192, 16, 16),
+             new SecretBlock(this, 2700,80,{
+                type: 'powerup',
+                power: 'gunPowerup'
+            }),
+
+            
 
             new Brick(this, 1888, 141),
             
@@ -449,7 +463,34 @@ const isUnder =
         }
     }
 
+ updateHorde(time) {
+    this.hordeTimer += time.secondsPassed;
+
+    if (this.hordeCount >= 10 || gameState.hordekillCount >= 5) this.cameraLock = false;
+
+    if (this.hordeTimer >= this.hordeInterval) {
+        this.hordeTimer = 0;
+        this.hordeInterval = Math.random() * 2 + 2; // reset AFTER trigger
+        this.hordeCount++;
+
+        if (this.hordeSpawnSide === 'left') {
+            this.enemies.push(
+                new KapNino(this, 2620, 157, 2, 1),
+            );
+            this.hordeSpawnSide = 'right'; // switch
+        } else {
+            this.enemies.push(
+                new KapNino(this, 2875, 157, 2, -1),
+            );
+            this.hordeSpawnSide = 'left'; // switch back
+        }
+
+        console.log("Enemy spawned:", this.hordeSpawnSide);
+    }
+}
+
     update(time) {
+        if(this.cameraLock) this.updateHorde(time);
         if (gameState.changeScene) this.game.setScene(new LevelTransition(this.game));
         if(gameState.levelFinished) {
             this.enemies.length = 0;
@@ -523,7 +564,6 @@ const isUnder =
     
     this.enemies.push(
     //  new KapNino(this, 120, 60, 2),
-
     );
     
     this.pipes.push(
@@ -608,6 +648,7 @@ const isUnder =
                 type: 'powerup',
                 power: 'mushroom'
             }),
+            
             new SecretBlock(this, 256,141),
             new SecretBlock(this, 368,141),
             new SecretBlock(this, 353,80),
@@ -659,9 +700,6 @@ const isUnder =
             new Ground(this, 2923, 160, 16, 16),
             new Ground(this, 2987, 96, 16, 16),
 
-            new Ground(this, 3163, 192, 16, 16),
-
-           
 
             new Brick(this, 1888, 141),
             
@@ -678,6 +716,8 @@ const isUnder =
             new SecretBlock(this, 2720, 141),
             new Brick(this, 2736, 141),
         );
+
+        this.debris.push(new FlagPole(this, 3163, 40));
          // Reset Mario
     this.superManSpawned = false;
    
@@ -763,30 +803,48 @@ const isUnder =
             }
         
 
-        // Stage scrolling (follow first active player)
-        var activePlayer = this.players.find(function(p) { return !p.isDead; }) || this.players[0];
-        var canvasWidth = this.stageContext.width || 200; // default to 200 if not set
-        var stageWidth = this.frames.get(this.stageContext.frame)[2];
-        var leftBoundary = canvasWidth / 3;
-        var rightBoundary = canvasWidth * 2 / 3;
+    // Stage scrolling (follow first active player)
+const activePlayer = this.players.find(p => !p.isDead) || this.players[0];
+const canvasWidth = this.stageContext.width || 200;
+const stageWidth = this.frames.get(this.stageContext.frame)[2];
+const leftBoundary = canvasWidth / 3;
+const rightBoundary = canvasWidth * 2 / 3;
 
-        if (activePlayer.position.x <= 5) activePlayer.position.x = 5;
-        if (activePlayer.position.x >= stageWidth - canvasWidth + 100) activePlayer.position.x = stageWidth - canvasWidth + 100;
+// === CAMERA LOCK TRIGGER ===
+if (!this.cameraLock && activePlayer.position.x >= 2730 && !this.cameraLockDone) {
+    this.cameraLock = true;
+    this.cameraLockDone = true;
+    // lock camera at current stage.x or far right if desired
+    this.lockedStageX = 2550; 
+}
 
-        if (activePlayer.position.x - this.stage.x < leftBoundary)
-            this.stage.x = activePlayer.position.x - leftBoundary;
-        else if (activePlayer.position.x - this.stage.x > rightBoundary)
-            this.stage.x = activePlayer.position.x - rightBoundary;
+// === CAMERA SCROLLING ===
+if (!this.cameraLock) {
+    if (activePlayer.position.x - this.stage.x < leftBoundary)
+        this.stage.x = activePlayer.position.x - leftBoundary;
+    else if (activePlayer.position.x - this.stage.x > rightBoundary)
+        this.stage.x = activePlayer.position.x - rightBoundary;
 
-        if (this.stage.x < 0) this.stage.x = 0;
-        if (this.stage.x > stageWidth - canvasWidth - 300)
-            this.stage.x = stageWidth - canvasWidth - 300;
+    // clamp stage.x
+    if (this.stage.x < 0) this.stage.x = 0;
+    if (this.stage.x > stageWidth - canvasWidth - 300)
+        this.stage.x = stageWidth - canvasWidth - 300;
+} else {
+    // camera locked
+    this.stage.x = this.lockedStageX;
+
+    // clamp player inside visible camera area
+    const visibleLeft = this.stage.x;
+    const visibleRight = this.stage.x + canvasWidth+180;
+    if (activePlayer.position.x < visibleLeft) activePlayer.position.x = visibleLeft;
+    if (activePlayer.position.x > visibleRight) activePlayer.position.x = visibleRight;
+}
     }
 
     drawEntities(context) {
         for (const brick of this.bricks) {
             brick.draw(context, this.stage);
-            brick.drawDebug(context, this.stage);
+           // brick.drawDebug(context, this.stage);
         }
            for (const pipe of this.pipes) {
            // pipe.draw(context, this.stage);
@@ -800,7 +858,7 @@ const isUnder =
                 enemy.position.y - this.stage.y,
                 enemy.direction
             );
-            enemy.drawDebug?.(context, this.stage);
+           // enemy.drawDebug?.(context, this.stage);
         }
     }
 
@@ -825,7 +883,7 @@ const isUnder =
                 player.position.y - this.stage.y,
                 player.direction
             );
-            player.drawDebug(context, this.stage);
+          //  player.drawDebug(context, this.stage);
         }
          // Draw bricks behind Mario
         this.drawEntities(context);

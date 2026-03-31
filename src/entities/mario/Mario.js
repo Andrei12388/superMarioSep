@@ -15,8 +15,10 @@ export class Mario {
         this.ground = 207;
 
         // Position offset for player2
-        this.position = { x: 2550 + playerId * 40, y: 200 };
+        this.position = { x: 2600 + playerId * 40, y: 200 };
         this.direction = 1;
+
+        this.powerType = null;
 
         this.walkEndAnim = false;
         this.removeMario = false; // flag to signal Mario removal after auto-walk finishes
@@ -76,6 +78,21 @@ export class Mario {
                 [[92, 4, 29, 47], [15, 45], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
                 [[136, 4, 31, 44], [15, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]
             ]],
+             ['idleGun', [
+                [[144, 432, 45, 44], [22, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]
+            ]],
+            ['walkGun', [
+                [[144, 432, 45, 44], [22, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[92, 432, 44, 47], [22, 45], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[47, 430, 32, 50], [16, 48], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[0, 429, 37, 49], [18, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]
+            ]],
+              ['GunShoot', [
+                  [[144, 432, 45, 44], [22, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[199, 427, 39, 53], [19, 51], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[243, 428, 43, 49], [22, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+               
+            ]],
             ['getUp-1', [
                 [[11, 955, 53, 55], [27, 53], { push: [-20, -50, 36, 46], hurt: [0, -500, 0, 0] }]
             ]],
@@ -108,12 +125,17 @@ export class Mario {
             [FighterState.IDLE]: {
                 init: this.handleIdleInit.bind(this),
                 update: this.handleIdleState.bind(this),
-                validFrom: [undefined, FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALKEND,FighterState.WALK_BACKWARD, FighterState.GROW]
+                validFrom: [undefined, FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALKEND,FighterState.WALK_BACKWARD, FighterState.GROW, FighterState.GUNSHOOT]
             },
             [FighterState.GROW]: {
                 init: this.handleGrowInit.bind(this),
                 update: this.handleGrowState.bind(this),
-                validFrom: [undefined, FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALK_BACKWARD]
+                validFrom: [undefined, FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALK_BACKWARD, FighterState.GUNSHOOT]
+            },
+             [FighterState.GUNSHOOT]: {
+                init: this.handleGunShootInit.bind(this),
+                update: this.handleGunShootState.bind(this),
+                validFrom: [undefined, FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALK_BACKWARD, FighterState.GROW]
             },
             [FighterState.WALK_FORWARD]: {
                 init: this.handleWalkForwardInit.bind(this),
@@ -152,6 +174,16 @@ export class Mario {
 
         state.init(...args);
     }
+
+    handleGunShootInit() {
+        this.currentAnimationKey = 'GunShoot';
+        this.shoot();
+        console.log("Shooting")
+    }
+
+    handleGunShootState(time) {
+      
+    }
     
     handleWalkEndInit(){
         console.log("Entered WALKEND state");
@@ -166,54 +198,98 @@ export class Mario {
     }
 
     // --- IDLE STATE ---
-    handleIdleInit() {
-       // this.resetVelocities();
-        this.currentAnimationKey = this.isBig ? 'idle' : 'idleSmall';
-    }
-    handleGrowInit() {
-        
-        this.alpha = 0.5;
-        this.currentAnimationKey = this.isBig ? 'growSmall' : 'growBig';
-    }
+   handleIdleInit() {
+    this.currentAnimationKey = this.isPoweredUp
+        ? 'idleGun'
+        : (this.isBig ? 'idle' : 'idleSmall');
+}
+   handleGrowInit() {
+    this.alpha = 0.5;
 
-  handleGrowState() {
+    // Always reuse grow animation
+    this.currentAnimationKey = this.isBig ? 'growSmall' : 'growBig';
+}
+
+ handleGrowState() {
     const frames = this.frames.get(this.currentAnimationKey);
 
-    // Wait until LAST FRAME (not frame 1)
     if (this.animationFrame === frames.length - 1) {
-        if (this.currentAnimationKey === 'growBig') {
+        this.alpha = 1;
+
+        if (this.powerType === 'gun') {
+            // 🔫 GUN MODE
             this.isBig = true;
-            this.alpha = 1;
             this.isPoweredUp = true;
+
             this.changeState(FighterState.IDLE, 'idle');
+        } 
+        else {
+            // 🍄 NORMAL MUSHROOM
+            if (this.currentAnimationKey === 'growBig') {
+                this.isBig = true;
+                this.isPoweredUp = false; // 👈 important: not gun
+                this.changeState(FighterState.IDLE, 'idle');
+            }
+
+            if (this.currentAnimationKey === 'growSmall') {
+                this.isBig = false;
+                this.isPoweredUp = false;
+                this.changeState(FighterState.IDLE, 'idleSmall');
+            }
         }
 
-        if (this.currentAnimationKey === 'growSmall') {
-            this.isBig = false;
-            this.alpha = 1;
-            this.isPoweredUp = false;
-            this.changeState(FighterState.IDLE, 'idleSmall');
-        }
+        // reset after use
+        this.powerType = null;
     }
 }
 
-    handleIdleState() {
-      
-        if (control.isHeavyKick(this.playerId) && this.onGround) { // <-- property
-            this.velocity.y = -this.jumpForce;
-            playSound(this.soundJump, 1)
-        } else if (control.isForward(this.playerId, 1)) {
-            this.changeState(FighterState.WALK_FORWARD, this.isBig ? 'walk' : 'walkSmall');
-        } else if (control.isBackward(this.playerId, 1)) {
-            this.changeState(FighterState.WALK_BACKWARD, this.isBig ? 'walk' : 'walkSmall');
-        }
+  handleIdleState() {
+    // 🔫 SHOOT
+    if (this.isPoweredUp && control.isLightPunch(this.playerId)) {
+        this.changeState(FighterState.GUNSHOOT, 'GunShoot');
+        return;
     }
 
+    // Jump
+    if (control.isHeavyKick(this.playerId) && this.onGround) {
+        this.velocity.y = -this.jumpForce;
+        playSound(this.soundJump, 1);
+    }
+    else if (control.isForward(this.playerId, 1)) {
+        this.changeState(
+            FighterState.WALK_FORWARD,
+            this.isPoweredUp ? 'walkGun' : (this.isBig ? 'walk' : 'walkSmall')
+        );
+    }
+    else if (control.isBackward(this.playerId, 1)) {
+        this.changeState(
+            FighterState.WALK_BACKWARD,
+            this.isPoweredUp ? 'walkGun' : (this.isBig ? 'walk' : 'walkSmall')
+        );
+    }
+}
+
     // --- WALK STATES ---
-    handleWalkForwardInit() { this.direction = 1; this.currentAnimationKey = this.isBig ? 'walk' : 'walkSmall'; }
-    handleWalkBackwardInit() { this.direction = -1; this.currentAnimationKey = this.isBig ? 'walk' : 'walkSmall'; }
+  handleWalkForwardInit() {
+    this.direction = 1;
+    this.currentAnimationKey = this.isPoweredUp
+        ? 'walkGun'
+        : (this.isBig ? 'walk' : 'walkSmall');
+}
+   handleWalkBackwardInit() {
+    this.direction = -1;
+    this.currentAnimationKey = this.isPoweredUp
+        ? 'walkGun'
+        : (this.isBig ? 'walk' : 'walkSmall');
+}
+
+
 
     handleWalkForwardState() {
+         if (this.isPoweredUp && control.isLightPunch(this.playerId)) {
+        this.changeState(FighterState.GUNSHOOT, 'GunShoot');
+        return;
+    }
         const isRunning = control.isControlDown(this.playerId, Control.LIGHT_PUNCH) || control.isControlDown(this.playerId, Control.LIGHT_KICK);        if (isRunning) console.log('Running forward');        const currentMaxSpeed = isRunning ? 1.6 : this.maxSpeed;
         this.velocity.x = Math.min(this.velocity.x, currentMaxSpeed);
         this.position.x += this.velocity.x;
@@ -257,6 +333,10 @@ export class Mario {
     }
 
     handleWalkBackwardState() {
+         if (this.isPoweredUp && control.isLightPunch(this.playerId)) {
+        this.changeState(FighterState.GUNSHOOT, 'GunShoot');
+        return;
+    }
         const isRunning = control.isControlDown(this.playerId, Control.LIGHT_PUNCH) || control.isControlDown(this.playerId, Control.LIGHT_KICK);        if (isRunning) console.log('Running backward');        const currentMaxSpeed = isRunning ? 1.6 : this.maxSpeed;
         this.velocity.x = Math.max(this.velocity.x, -currentMaxSpeed);
         this.position.x += this.velocity.x;
@@ -535,26 +615,34 @@ for (const brick of this.game.bricks) {
     // --- Update collision boxes ---
     this.updateBoxes();
 
-   // --- Animate ---
+  // --- Animate ---
 this.animationTimer += 1;
 
 const frames = this.frames.get(this.currentAnimationKey);
 if (!frames) return;
 
+let animationFinished = false;
+
 if (this.animationTimer >= 10) {
     this.animationTimer = 0;
 
-    // Grow/Shrink should NOT loop
-    if (this.currentState === FighterState.GROW) {
+    if (
+        this.currentState === FighterState.GROW ||
+        this.currentState === FighterState.GUNSHOOT
+    ) {
         if (this.animationFrame < frames.length - 1) {
             this.animationFrame++;
         } else {
-            // Animation finished → let state handle it
+            animationFinished = true; // ✅ detect finish here
         }
     } else {
-        // Normal looping animations
         this.animationFrame = (this.animationFrame + 1) % frames.length;
     }
+}
+
+if (this.currentState === FighterState.GUNSHOOT && animationFinished) {
+    this.changeState(FighterState.IDLE, 'idleGun');
+    console.log("Animation finished, changing back to idleGun");
 }
 
 
@@ -636,6 +724,35 @@ if (control.isBackward(this.playerId, 1)) {
         this.isPoweredUp = false;
         this.changeState(FighterState.IDLE, 'idleSmall');
     }
+
+   shoot() {
+    console.log("PEW!");
+
+    // Compute the origin of the bullet based on Mario's direction
+    const bulletOffsetX = this.direction === 1 ? 22 : -22; // tweak these for your sprite
+    const bulletOriginX = this.position.x + bulletOffsetX;
+    const bulletOriginY = this.position.y - 25; // keep your vertical offset
+
+    this.game.debris.push({
+        position: { x: bulletOriginX, y: bulletOriginY },
+        velocity: { x: 3 * this.direction, y: 0 }, // positive = right, negative = left
+        life: 60,
+        update() {
+            this.position.x += this.velocity.x;
+            this.life--;
+            if (this.life <= 0) this.markedForDeletion = true;
+        },
+        draw(ctx, stage) {
+            ctx.fillStyle = 'yellow';
+            ctx.fillRect(
+                this.position.x - stage.x,
+                this.position.y - stage.y,
+                4,
+                2
+            );
+        }
+    });
+}
 
    die() {
     if (this.isDead) return;

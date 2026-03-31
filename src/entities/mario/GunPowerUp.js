@@ -3,7 +3,7 @@ import { playSound } from '../../soundHandler.js';
 import { gameState } from '../../state/gameState.js';
 import { ScoreText } from "./scoreText.js";
 
-export class PowerUpMushRoom {
+export class GunPowerUp {
     constructor(game, x, y, sourceBlock = null) {
         this.game = game;
         this.sourceBlock = sourceBlock;
@@ -18,7 +18,7 @@ export class PowerUpMushRoom {
         this.onGround = false;
 
         this.image = document.querySelector('img[alt="mario"]');
-        this.frame = [218, 145, 16, 16]; // mushroom sprite
+        this.frame = [239, 150, 25, 16]; // mushroom sprite
         this.markedForDeletion = false;
         
         this.life = 9999;
@@ -104,7 +104,7 @@ export class PowerUpMushRoom {
 
         const mario = this.game.mario;
         if (!mario.isBig) {
-            mario.powerType = 'mushroom';
+           mario.powerType = 'gun';
             mario.changeState(FighterState.GROW);
             playSound(document.querySelector('audio#sound-powerUp'), 1);
         }
