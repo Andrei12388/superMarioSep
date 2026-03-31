@@ -42,6 +42,7 @@ export class MarioScene {
         this.bricks = this.bricks || [];
         this.enemies = this.enemies || [];
         this.pipes = this.pipes || [];
+        this.bullets = this.bullets || [];
 
         // 2️⃣ When resetting stage, clear first, then push
         this.bricks.length = 0;
@@ -260,6 +261,7 @@ setEnemies(newEnemies) {
     // --- ENTITY UPDATES ---
     updateEntities(time) {
         // Update bricks
+        
         for (const brick of this.bricks) brick.update(time);
 
         for (const pipe of this.pipes) {
@@ -751,16 +753,79 @@ const isUnder =
         }
 
         this.debris.forEach(d => d.update(time));
+        this.bullets.forEach(d => d.update(time));
+        this.bullets = this.bullets.filter(d => !d.markedForDeletion);
         this.debris = this.debris.filter(d => !d.markedForDeletion);
 
         this.updateEntities(time);
 
         this.enemies = this.enemies.filter(e => !e.remove);
 
+
         // Enemy interactions for all players
         for (const enemy of this.enemies) {
             if (!enemy.boxes) continue;
             enemy.update(time);
+          // --- BULLET COLLISION HANDLER ---
+for (const bullet of this.bullets) {
+    if (bullet.markedForDeletion) continue;
+
+    const bulletBox = bullet.getBox();
+
+    // 1️⃣ Check collision with enemies
+    for (const enemy of this.enemies) {
+        if (!enemy.boxes || enemy.isDead) continue;
+
+        if (this.isColliding(bulletBox, enemy.boxes.push)) {
+            bullet.markedForDeletion = true;
+            enemy.isDead = true;
+            enemy.changeState(FighterState.DIE);
+            enemy.velocity.y = -3;
+            playSound(enemy.soundDead, 1);
+        }
+    }
+
+    // 2️⃣ Check collision with bricks
+    for (const brick of this.bricks) {
+        if (!brick.getWorldBox) continue;
+
+        const brickBox = brick.getWorldBox();
+        if (this.isColliding(bulletBox, brickBox)) {
+            bullet.markedForDeletion = true;
+            
+            if (brick.break) {
+                brick.break();   // heavy or destructible brick
+            } else if (brick.bump) {
+                brick.bump();    // secret block or light brick
+            }
+        }
+    }
+
+    // 3️⃣ Check collision with pipes
+    for (const pipe of this.pipes) {
+        if (!pipe.getWorldBox) continue;
+
+        const pipeBox = pipe.getWorldBox();
+        if (this.isColliding(bulletBox, pipeBox)) {
+            bullet.markedForDeletion = true;
+            // Optionally play a sound for hitting a pipe
+            playSound(document.querySelector('audio#sound-bump'), 1);
+        }
+    }
+
+    // 4️⃣ Optionally, check other debris / objects
+    for (const debris of this.debris) {
+        if (!debris.getWorldBox) continue;
+        const debrisBox = debris.getWorldBox();
+        if (this.isColliding(bulletBox, debrisBox)) {
+            bullet.markedForDeletion = true;
+            // Add effects if desired
+        }
+    }
+}
+
+// 5️⃣ Clean up bullets
+this.bullets = this.bullets.filter(b => !b.markedForDeletion);
 
 
             for (const player of this.players) {
@@ -844,11 +909,16 @@ if (!this.cameraLock) {
     drawEntities(context) {
         for (const brick of this.bricks) {
             brick.draw(context, this.stage);
-           // brick.drawDebug(context, this.stage);
+            brick.drawDebug(context, this.stage);
         }
            for (const pipe of this.pipes) {
            // pipe.draw(context, this.stage);
           //  pipe.drawDebug(context, this.stage);
+        }
+
+         for (const bullet of this.bullets) {
+            bullet.draw(context, this.stage);
+            bullet.drawDebug(context, this.stage);
         }
 
         for (const enemy of this.enemies) {
@@ -858,7 +928,7 @@ if (!this.cameraLock) {
                 enemy.position.y - this.stage.y,
                 enemy.direction
             );
-           // enemy.drawDebug?.(context, this.stage);
+            enemy.drawDebug?.(context, this.stage);
         }
     }
 
@@ -883,7 +953,7 @@ if (!this.cameraLock) {
                 player.position.y - this.stage.y,
                 player.direction
             );
-          //  player.drawDebug(context, this.stage);
+            player.drawDebug(context, this.stage);
         }
          // Draw bricks behind Mario
         this.drawEntities(context);

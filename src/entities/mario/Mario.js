@@ -3,6 +3,7 @@ import { Control } from '../../constants/control.js';
 import * as control from '../../inputHandler.js';
 import { playSound } from '../../soundHandler.js';
 import { gameState } from '../../state/gameState.js';
+import { Bullet } from './entity/bullet.js';
 
 export class Mario {
     constructor(game, playerId = 0) {
@@ -97,7 +98,7 @@ export class Mario {
                 [[0, 429, 37, 49], [18, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]
             ]],
               ['GunShoot', [
-                  [[144, 432, 45, 44], [22, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[144, 432, 45, 44], [22, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
                 [[199, 427, 39, 53], [19, 51], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
                 [[243, 428, 43, 49], [22, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
                
@@ -772,7 +773,7 @@ if (control.isBackward(this.playerId, 1)) {
     const bulletOriginY = this.position.y - 25;
 
     const mario = this;
-    playSound(document.querySelector('audio#sound-gunShot'), 1);
+    playSound(document.querySelector('audio#sound-gunShot'), 0.6);
 
     // 🔥 Smoke animation
     this.game.debris.push({
@@ -827,63 +828,16 @@ if (control.isBackward(this.playerId, 1)) {
         }
     });
 
- 
-   // 🔫 Bullet debris
-this.game.debris.push({
-    position: { x: bulletOriginX, y: bulletOriginY },
-    frameIndex: 0,
-    frameTimer: 0,
-    direction: this.direction,
-    speed: 4, // bullet horizontal speed
-    update() {
-        this.position.x += this.speed * this.direction;
+ // When shooting
+const bullet = new Bullet(
+    this.game,
+    bulletOriginX,   // bullet origin X
+    bulletOriginY,   // bullet origin Y
+    this.direction,    // player's direction
+    6                  // speed
+);
 
-        this.frameTimer++;
-        if (this.frameTimer >= 5) {
-            this.frameTimer = 0;
-            this.frameIndex++;
-        }
-
-        if (this.frameIndex >= mario.frames.get('gunBullet').length) {
-            this.frameIndex = 0; // loop if you want animation, or remove if single frame
-        }
-
-        // Optional: remove bullet if offscreen
-        if (this.position.x < 0 || this.position.x > 4000) { 
-            this.markedForDeletion = true;
-        }
-    },
-    draw(ctx, stage) {
-        const frames = mario.frames.get('gunBullet');
-        const frame = frames[this.frameIndex];
-        if (!frame) return;
-
-        const [[sx, sy, sw, sh], [ox, oy]] = frame;
-
-        ctx.save();
-        if (this.direction === -1) {
-            ctx.scale(-1, 1);
-            ctx.drawImage(
-                mario.image,
-                sx, sy, sw, sh,
-                -((this.position.x - stage.x) + sw - ox), // flip X
-                (this.position.y - stage.y) - oy,
-                sw,
-                sh
-            );
-        } else {
-            ctx.drawImage(
-                mario.image,
-                sx, sy, sw, sh,
-                (this.position.x - stage.x) - ox,
-                (this.position.y - stage.y) - oy,
-                sw,
-                sh
-            );
-        }
-        ctx.restore();
-    }
-});
+this.game.bullets.push(bullet);
 }
 
    die() {
