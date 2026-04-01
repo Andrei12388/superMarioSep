@@ -4,20 +4,20 @@ export class IceCream {
    constructor(game, x, y, direction = 1, speed = 6) { // upward default
         this.game = game;
 
-       // this.soundThrow = document.querySelector('audio#sound-iceThrow');
+        this.soundThrow = document.querySelector('audio#sound-iceCreamDead');
        
        this.soundBounce = document.querySelector('audio#sound-jump');
         this.soundBounce.volume = 0.6;
-       // this.soundThrow.play();
+        this.soundThrow.play();
 
         this.ground = 300;
         this.gravity = 0.4;
-        this.bounceDamping = 0.7; // lose 30% of speed on bounce
+        this.bounceDamping = 0.2; // lose 30% of speed on bounce
 
         this.position = { x, y };
        this.velocity = {
             x: direction * speed, // left or right
-            y: -speed * 0.9       // upward arc (tweak this!)
+            y: -speed * 0.3       // upward arc (tweak this!)
         };
 
         this.width = 21;
@@ -221,7 +221,7 @@ export class IceCream {
     }
 
     draw(context) {
-        this.drawFrame(context, this.position.x, this.position.y);
+       // this.drawFrame(context, this.position.x, this.position.y);
     }
 
     drawDebug(context, stageOffset = { x: 0, y: 0 }, scale = 1) {

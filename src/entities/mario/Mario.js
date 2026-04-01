@@ -22,6 +22,8 @@ export class Mario {
 
         this.powerType = null;
 
+        this.play4thFloorSound = false;
+
         this.levelEndPhase = 0; // 0 = none, 1 = wait1, 2 = counting, 3 = wait2
         this.levelEndTimer = 0;
         this.timeConvertTimer = 0;
@@ -552,6 +554,10 @@ if (this.levelEndPhase > 0) {
     // ⏱ PHASE 2: convert time → score
     if (this.levelEndPhase === 2) {
         this.timeConvertTimer += time.secondsPassed;
+        if(!this.play4thFloorSound){
+            playSound(document.querySelector('audio#sound-4thFloor'), 1);
+            this.play4thFloorSound = true;
+        }
 
         if (this.timeConvertTimer >= 0.05 && gameState.mario.time > 0) {
             this.timeConvertTimer = 0;

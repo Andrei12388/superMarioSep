@@ -9,11 +9,9 @@ export class SelectaEnemy {
     constructor(game, x, y, speed = 0.5, direction = 1) {
         this.game = game;
          this.soundDead = document.querySelector('audio#sound-stomp');
-         if(gameState.explicitMode) {
-            this.soundKapDead = document.querySelector('audio#sound-kapDead');
-        } else {
-            this.soundKapDead = document.querySelector('audio#sound-kapDeadNonExplicit');
-        }
+        
+        this.soundKapDead = document.querySelector('audio#sound-selectaDead');
+        
         // --- Constants & initial state ---
         this.ground = 207;
         this.maxSpeed = 1;
@@ -21,6 +19,8 @@ export class SelectaEnemy {
         this.acceleration = 0.1;
         this.friction = 0.1;
         this.gravity = 0.5;
+        this.lives = 3;
+        this.hitCooldown = 0;
         this.jumpForce = 10;
         this.isDead = false;
 
@@ -66,7 +66,7 @@ export class SelectaEnemy {
             [FighterState.IDLE]: {
                 init: this.handleIdleInit.bind(this),
                 update: this.handleIdleState.bind(this),
-                validFrom: [undefined, FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALK_BACKWARD]
+                validFrom: [undefined, FighterState.IDLE, FighterState.WALK_FORWARD, FighterState.WALK_BACKWARD, FighterState.DIE]
             },
              [FighterState.DIE]: {
                 init: this.handleDeadInit.bind(this),
@@ -78,6 +78,79 @@ export class SelectaEnemy {
         // Initialize state
         this.changeState(FighterState.IDLE);
     }
+
+takeDamage() {
+    if (this.hitCooldown > 0) return;
+
+    this.hitCooldown = 0.3; // 300ms invulnerability
+    this.lives--;
+
+    console.log("SelectaEnemy hit! Lives left:", this.lives);
+
+    if (this.lives <= 0) {
+        this.isDead = true;
+        this.changeState(FighterState.DIE);
+    } else {
+        // Aggressive reaction
+        this.velocity.y = -2; // small bounce
+        this.baseSpeed += 0.3; // temporarily faster
+        // Optional: face Mario
+        if (this.game.mario) {
+            this.direction = this.game.mario.position.x > this.position.x ? 1 : -1;
+        }
+    }
+}
+
+
+// --- DEAD STATE ---
+handleDeadInit() {
+    console.log("Dead enemy");
+    
+    this.takeDamage(); // prevent further damage
+    this.game.scoreTexts.push(
+        new ScoreText(this.game, this.position.x + 5, this.position.y, 100)
+    );
+    playSound(this.soundDead, 1);
+    playSound(this.soundKapDead, 1);
+
+    gameState.mario.score += 100;
+
+    this.deathTimer = 0;
+    this.velocity.y = -3; // optional bounce
+}
+
+handleDeadState(time) {
+    
+    if(this.lives > 0){
+        this.changeState(FighterState.IDLE);
+        this.isDead = false;
+        return;
+    } 
+    this.velocity.x = 0;
+    this.velocity.y += this.gravity;
+    this.position.y += this.velocity.y;
+
+    this.deathTimer += time.secondsPassed;
+    if (this.deathTimer >= this.deathDuration) this.remove = true;
+}
+
+// --- DRAW HP BAR ---
+drawHPBar(context, stageOffset = { x: 0, y: 0 }) {
+    const barWidth = 40;
+    const barHeight = 5;
+    const hpRatio = this.lives / 3;
+
+    const x = this.position.x - barWidth / 2 - stageOffset.x;
+    const y = this.position.y - 105 - stageOffset.y;
+
+    // Background
+    context.fillStyle = 'black';
+    context.fillRect(x, y, barWidth, barHeight);
+
+    // HP
+    context.fillStyle = 'red';
+    context.fillRect(x, y, barWidth * hpRatio, barHeight);
+}
 
     // --- STATE HANDLING ---
     changeState(newState, animationKey = null, ...args) {
@@ -121,7 +194,7 @@ throwIceCream() {
    const ice = new IceCream(
     this.game,
     this.position.x,
-    this.position.y - 20,
+    this.position.y - 60,
     this.direction, // 👈 THIS is the key
     3
 );
@@ -131,44 +204,6 @@ throwIceCream() {
     
     // add to the game's projectile array (not enemies)
     this.game.enemies.push(ice);
-}
-
-       // --- dead STATE ---
-   handleDeadInit() {
-    if(gameState.hordeActive) gameState.hordekillCount++;
-    console.log("Dead enemy");
-    this.game.scoreTexts.push(
-               new ScoreText(
-                   this.game,
-                   this.position.x+5,
-                   this.position.y,
-                   100
-               )
-           );
-    playSound(this.soundDead, 1)
-    playSound(this.soundKapDead, 1)
-
-    gameState.mario.score += 100;
-   
-    this.currentAnimationKey = 'dead';
-    this.deathTimer = 0;
-
-    // optional: small bounce or fall feel
-    this.velocity.y = -3;
-}
-
-   handleDeadState(time) {
-    this.velocity.x = 0;
-
-    // gravity still applies for a nice drop
-    this.velocity.y += this.gravity;
-    this.position.y += this.velocity.y;
-
-    this.deathTimer += time.secondsPassed;
-
-    if (this.deathTimer >= this.deathDuration) {
-        this.remove = true; // mark for deletion
-    }
 }
 
     
@@ -193,7 +228,9 @@ throwIceCream() {
 
    // --- UPDATE MOVEMENT & PHYSICS ---
 update(time) {
-
+if (this.hitCooldown > 0) {
+    this.hitCooldown -= time.secondsPassed;
+}
         const state = this.states[this.currentState];
         if (state && state.update) state.update(time);
         this.updateBoxes();
@@ -334,10 +371,10 @@ drawDebug(context, stageOffset = { x: 0, y: 0 }, scale = 1) {
         context.restore();
     }
 
-    draw(context) {
-        this.drawFrame(context, this.position.x, this.position.y, this.direction);
-        
-    }
+   draw(context, stageOffset = { x: 0, y: 0 }) {
+    //this.drawFrame(context, this.position.x, this.position.y, this.direction);
+    this.drawHPBar(context, stageOffset);
+}
 
     // --- HELPERS ---
     onGround() {

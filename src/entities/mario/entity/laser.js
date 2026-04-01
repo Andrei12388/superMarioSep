@@ -258,6 +258,6 @@ getWorldBoxRotated(box) {
 }
 
     draw(context) {
-        this.drawFrame(context, this.position.x, this.position.y, this.direction);
+      //  this.drawFrame(context, this.position.x, this.position.y, this.direction);
     }
 }

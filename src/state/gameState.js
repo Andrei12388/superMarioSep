@@ -116,6 +116,6 @@ export const gameState = {
     hordekillCount: 0,
      debug: {
       mario: false,
-      entities: true,
+      entities: false,
     },
 };

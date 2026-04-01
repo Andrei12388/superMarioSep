@@ -271,11 +271,11 @@ drawDebug(context, stageOffset = { x: 0, y: 0 }, scale = 1) {
     }
 
     draw(context) {
-        this.drawFrame(
-            context,
-            this.position.x,
-            this.position.y,
-            this.direction
-        );
+      //  this.drawFrame(
+         //   context,
+      //      this.position.x,
+        //    this.position.y,
+     //       this.direction
+    //    );
     }
 }

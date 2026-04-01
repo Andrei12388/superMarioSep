@@ -92,7 +92,7 @@ export class MarioScene {
             new KapNino(this, 682, 150,0.5, -1),
             new KapNino(this, 656, 150,0.5, -1),
 
-            new SelectaEnemy(this, 2750, 50, 1, 1),
+            
 
         ]);
 
@@ -479,7 +479,7 @@ const isUnder =
 updateHorde(time) {
     this.hordeTimer += time.secondsPassed;
 
-    if (gameState.hordekillCount >= 5) {
+    if (gameState.hordekillCount >= 25) {
         this.stageMusic.play();
         document.querySelector('audio#music-warning').pause();
         this.soundKapNinoBoss.pause();
@@ -627,7 +627,7 @@ updateHorde(time) {
           //  new SuperMan(this, 2000, 50),
             new KapNino(this, 682, 150,0.5, -1),
             new KapNino(this, 656, 150,0.5, -1),
-            new SelectaEnemy(this, 3077, 150, 1, 1),
+           
         );
 
         this.pipes.push(
@@ -764,16 +764,21 @@ updateHorde(time) {
 
          // Spawn SuperMan dynamically when Mario reaches x = 1500
     if (!this.superManSpawned && this.mario.position.x >= 700) {
-      //  this.enemies.push(new SuperMan(this, 1000, 35)); // spawn near the target position
+        this.enemies.push(new SuperMan(this, 1000, 35)); // spawn near the target position
         this.superManSpawned = true; // make sure it only happens once
-        
     }
-     if (!this.enemySpawn && this.mario.position.x >=1430 && this.mario.position.x <= 2000) {
+   
+     if (!this.enemySpawn && this.mario.position.x >=1430 && this.mario.position.x <= 2300) {
         this.enemies.push(new KapNino(this, 1730, 175)); 
         this.enemies.push(new KapNino(this, 1705, 175)); 
-        this.enemies.push(new SelectaEnemy(this, 1950, 175)); 
+         this.enemies.push(new SelectaEnemy(this, 2100, 50, 1, 1));
         this.enemySpawn = true; // make sure it only happens once
-      
+         
+    }
+     if (!this.enemySpawn2 && this.mario.position.x >=2600) {
+     
+         this.enemies.push(new SelectaEnemy(this, 2750, 50, 1, 1));
+       this.enemySpawn2 = true; // make sure it only happens once
     }
 
         // continue if at least one player alive
@@ -819,7 +824,7 @@ for (const bullet of this.bullets) {
 
         if (this.isColliding(bulletBox, enemy.boxes.push)) {
             bullet.markedForDeletion = true;
-            enemy.isDead = true;
+            if(enemy.lives < 1)enemy.isDead = true;
             enemy.changeState(FighterState.DIE);
             enemy.velocity.y = -3;
             playSound(enemy.soundDead, 1);
@@ -982,6 +987,7 @@ if (!this.cameraLock) {
                 enemy.position.y - this.stage.y,
                 enemy.direction
             );
+           enemy.draw(context, this.stage);
           if(gameState.debug.entities) enemy.drawDebug?.(context, this.stage);
         }
     }
