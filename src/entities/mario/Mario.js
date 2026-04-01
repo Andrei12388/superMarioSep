@@ -8,6 +8,7 @@ import { Bullet } from './entity/bullet.js';
 export class Mario {
     constructor(game, playerId = 0, x = 30, y = 200) {
         this.game = game;
+        
         this.playerId = playerId;
         this.soundJump = document.querySelector('audio#sound-jump');
          this.gameOver = document.querySelector('audio#music-gameOver');
@@ -446,6 +447,14 @@ export class Mario {
         }
     }
 
+    getFeetY() {
+    return this.position.y + this.boxes.push.y + this.boxes.push.height;
+}
+
+setFeetY(feetY) {
+    this.position.y = feetY - this.boxes.push.height - this.boxes.push.y;
+}
+
     // Add this inside Mario class
 checkCollision(box) {
     const marioBox = {
@@ -629,8 +638,28 @@ if (this.autoWalk) {
  if (this.pipeTimer > 40) {
     this.visible = false;
 
-    this.position.x = this.currentPipe.options.destination.x;
-    this.position.y = this.currentPipe.options.destination.y;
+   const offsetX = this.playerId * 30; // adjust spacing
+
+this.position.x = this.currentPipe.options.destination.x + offsetX;
+const targetFeetY = this.currentPipe.options.destination.y;
+
+const players = [this.game.mario, this.game.mario2];
+
+for (const p of players) {
+    if (!p) continue;
+
+    p.position.x = this.currentPipe.options.destination.x;
+
+    const targetFeetY = this.currentPipe.options.destination.y;
+    p.setFeetY(targetFeetY);
+
+    p.resetVelocities();
+    p.onGround = false;
+    p.changeState(FighterState.IDLE);
+}
+
+// align feet instead of raw position
+this.setFeetY(targetFeetY);
 
     this.game.stageContext.frame = this.currentPipe?.options.stage || 'stage';
     gameState.stage = this.currentPipe?.options.stage || 'stage';

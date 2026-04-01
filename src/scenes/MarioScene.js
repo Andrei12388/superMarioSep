@@ -79,6 +79,7 @@ export class MarioScene {
         }
         
         this.mario = this.players[0];
+        this.mario2 = this.players[1];
 
         this.setEnemies([
            new KapNino(this, 400, 150,0.5, -1),
@@ -319,7 +320,7 @@ const isUnder =
         if (isOnTop && player.onGround ) {
             // 👇 CHECK INPUT
               player.currentPipe = pipe;
-            if (control.isDown(player.playerId, 0) && this.mario.currentPipe?.options.direction === 'down') {
+            if (control.isDown(player.playerId, 0) && player.currentPipe?.options.direction === 'down') {
                 
                 // lock movement
                 player.velocity.x = 0;
@@ -520,7 +521,7 @@ updateHorde(time) {
             player.update(time);
         }
 
-        if (this.mario.changeStage) {
+       if (this.players.some(p => p.changeStage)){
             if(gameState.stage=== 'stagePipe') {
     // Clear & push new stage
        this.bricks = this.bricks || [];
