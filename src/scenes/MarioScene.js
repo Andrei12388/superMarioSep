@@ -8,6 +8,7 @@ import { KapNino } from '../entities/mario/KapNino.js';
 import { Mario } from '../entities/mario/Mario.js';
 import { Pipe } from '../entities/mario/pipe.js';
 import { SecretBlock } from '../entities/mario/secretBlock.js';
+import { SelectaEnemy } from '../entities/mario/selectaEnemy.js';
 import { SuperMan } from '../entities/mario/superMan.js';
 import * as control from '../inputHandler.js';
 import { playSound } from '../soundHandler.js';
@@ -32,6 +33,7 @@ export class MarioScene {
 
         this.cameraLock = false;
         this.cameraLockDone = false;
+        this.enemySpawn = false;
 
         this.hordeTimer = 0;
         this.hordeCount = 0;
@@ -69,12 +71,12 @@ export class MarioScene {
         this.stage = { x: 0, y: 0 };
         if(gameState.mario.players === 2){
             this.players = [
-            new Mario(this, 0),
-            new Mario(this, 1)
+            new Mario(this, 0,30),
+            new Mario(this, 1,30)
         ];
         } else {
             this.players = [
-            new Mario(this, 0, 2800),
+            new Mario(this, 0, 2600),
         ];
         }
         
@@ -85,9 +87,12 @@ export class MarioScene {
            new KapNino(this, 400, 150,0.5, -1),
             new KapNino(this, 440, 150,0.5, -1),
             new CloudEnemy(this, 470, 100),
+           
           //  new SuperMan(this, 2000, 50),
             new KapNino(this, 682, 150,0.5, -1),
             new KapNino(this, 656, 150,0.5, -1),
+
+            new SelectaEnemy(this, 2750, 50, 1, 1),
 
         ]);
 
@@ -145,6 +150,7 @@ export class MarioScene {
             //ground
             new Ground(this, 0, 208, 1100, 16),
             new Ground(this, -16, 0, 16, 208),
+            new Ground(this, 3507, 0, 16, 208),
             new Ground(this, 1131, 208, 240, 16),
             new Ground(this, 1419, 208, 1024, 16),
             new Ground(this, 2475, 208, 1105, 16),
@@ -583,7 +589,7 @@ updateHorde(time) {
     );
     
     this.enemies.push(
-     new KapNino(this, 140, 60, 2, -1),
+     new KapNino(this, 150, 60, 2, -1),
     );
     
     this.pipes.push(
@@ -600,6 +606,8 @@ updateHorde(time) {
     // Reset Mario
     this.mario.resetVelocities();
     this.mario.changeStage = false;
+    this.mario2.resetVelocities();
+    this.mario2.changeStage = false;
 }
  else if(gameState.stage === 'stage') {
     // Clear & push new stage
@@ -619,6 +627,7 @@ updateHorde(time) {
           //  new SuperMan(this, 2000, 50),
             new KapNino(this, 682, 150,0.5, -1),
             new KapNino(this, 656, 150,0.5, -1),
+            new SelectaEnemy(this, 3077, 150, 1, 1),
         );
 
         this.pipes.push(
@@ -675,6 +684,7 @@ updateHorde(time) {
 
             //ground
             new Ground(this, 0, 208, 1100, 16),
+             new Ground(this, 3507, 0, 16, 208),
             new Ground(this, 1131, 208, 240, 16),
             new Ground(this, 1419, 208, 1024, 16),
             new Ground(this, 2475, 208, 1105, 16),
@@ -747,14 +757,23 @@ updateHorde(time) {
    
     this.mario.resetVelocities();
     this.mario.changeStage = false;
+    this.mario2.resetVelocities();
+    this.mario2.changeStage = false;
 }
         }
 
          // Spawn SuperMan dynamically when Mario reaches x = 1500
     if (!this.superManSpawned && this.mario.position.x >= 700) {
-        this.enemies.push(new SuperMan(this, -50, 35)); // spawn near the target position
+      //  this.enemies.push(new SuperMan(this, 1000, 35)); // spawn near the target position
         this.superManSpawned = true; // make sure it only happens once
-        console.log("SuperMan spawned!");
+        
+    }
+     if (!this.enemySpawn && this.mario.position.x >=1430 && this.mario.position.x <= 2000) {
+        this.enemies.push(new KapNino(this, 1730, 175)); 
+        this.enemies.push(new KapNino(this, 1705, 175)); 
+        this.enemies.push(new SelectaEnemy(this, 1950, 175)); 
+        this.enemySpawn = true; // make sure it only happens once
+      
     }
 
         // continue if at least one player alive

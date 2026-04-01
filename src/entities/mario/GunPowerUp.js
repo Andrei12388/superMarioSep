@@ -102,7 +102,7 @@ export class GunPowerUp {
     if (isColliding) {
         this.markedForDeletion = true;
 
-        const mario = this.game.mario;
+        const mario = this.game.mario || this.game.mario2; // support player 2
         
            mario.powerType = 'gun';
             mario.changeState(FighterState.GROW);

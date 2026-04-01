@@ -237,6 +237,7 @@ export class Mario {
 
  handleGrowState() {
     const frames = this.frames.get(this.currentAnimationKey);
+     this.handleHorizontalCollisions();
 
     if (this.animationFrame === frames.length - 1) {
         this.alpha = 1;
