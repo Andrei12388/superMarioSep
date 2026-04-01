@@ -7,6 +7,7 @@ import { drawText } from '../utils/UIHandler.js';
 export class LevelTransition {
     constructor(game, options = {}) {
         this.game = game;
+
         this.image = document.querySelector('img[alt="mario"]');
         document.querySelector('audio#sound-kapNinoBoss').pause();
         document.querySelector('audio#sound-kapNinoBossNonExplicit').pause();
@@ -22,6 +23,10 @@ export class LevelTransition {
             ['mario',[131, 63, 31, 32]],
         ]);
         gameState.mario.time = 400;
+        gameState.hordekillCount = 0;
+        gameState.hordeActive = false;
+        gameState.levelFinished = false;
+        gameState.changeScene = false;
 
         this.timer = 0;
         this.duration = 4; // 3 seconds

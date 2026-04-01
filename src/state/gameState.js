@@ -35,10 +35,7 @@ export const gameState = {
     dodging: false,
     kapeCom: false,
     stageMusic: 'audio#stage-payatas',
-    debug: {
-      fighters: false,
-      entities: false,
-    },
+
     cameraShake: {
         enable: false,
         duration: 0,
@@ -117,4 +114,8 @@ export const gameState = {
     levelFinished: false,
     hordeActive: false,
     hordekillCount: 0,
+     debug: {
+      mario: false,
+      entities: true,
+    },
 };

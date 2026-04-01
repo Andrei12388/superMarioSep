@@ -24,6 +24,7 @@ export class MarioScene {
         this.stageMusic = document.querySelector('audio#music-ground');
         this.stageMusic.currentTime = 0;
         gameState.mario.time = 400;
+        gameState.hordeActive = false;
         gameState.hordekillCount = 0;
         if(gameState.explicitMode) this.soundKapNinoBoss = document.querySelector('audio#sound-kapNinoBoss');
         else this.soundKapNinoBoss = document.querySelector('audio#sound-kapNinoBossNonExplicit');
@@ -73,7 +74,7 @@ export class MarioScene {
         ];
         } else {
             this.players = [
-            new Mario(this, 0),
+            new Mario(this, 0, 2800),
         ];
         }
         
@@ -471,7 +472,7 @@ const isUnder =
 updateHorde(time) {
     this.hordeTimer += time.secondsPassed;
 
-    if (gameState.hordekillCount >= 25) {
+    if (gameState.hordekillCount >= 5) {
         this.stageMusic.play();
         document.querySelector('audio#music-warning').pause();
         this.soundKapNinoBoss.pause();
@@ -581,7 +582,7 @@ updateHorde(time) {
     );
     
     this.enemies.push(
-    //  new KapNino(this, 120, 60, 2),
+     new KapNino(this, 140, 60, 2, -1),
     );
     
     this.pipes.push(
@@ -750,7 +751,7 @@ updateHorde(time) {
 
          // Spawn SuperMan dynamically when Mario reaches x = 1500
     if (!this.superManSpawned && this.mario.position.x >= 700) {
-        this.enemies.push(new SuperMan(this, 1000, 35)); // spawn near the target position
+        this.enemies.push(new SuperMan(this, -50, 35)); // spawn near the target position
         this.superManSpawned = true; // make sure it only happens once
         console.log("SuperMan spawned!");
     }
@@ -942,16 +943,16 @@ if (!this.cameraLock) {
         }
         for (const brick of this.bricks) {
             brick.draw(context, this.stage);
-          //  brick.drawDebug(context, this.stage);
+          if(gameState.debug.entities) brick.drawDebug(context, this.stage);
         }
            for (const pipe of this.pipes) {
            // pipe.draw(context, this.stage);
-          //  pipe.drawDebug(context, this.stage);
+          if(gameState.debug.entities) pipe.drawDebug(context, this.stage);
         }
 
          for (const bullet of this.bullets) {
             bullet.draw(context, this.stage);
-          //  bullet.drawDebug(context, this.stage);
+           if(gameState.debug.entities) bullet.drawDebug(context, this.stage);
         }
 
         for (const enemy of this.enemies) {
@@ -961,7 +962,7 @@ if (!this.cameraLock) {
                 enemy.position.y - this.stage.y,
                 enemy.direction
             );
-          //  enemy.drawDebug?.(context, this.stage);
+          if(gameState.debug.entities) enemy.drawDebug?.(context, this.stage);
         }
     }
 
@@ -984,7 +985,7 @@ if (!this.cameraLock) {
                 player.position.y - this.stage.y,
                 player.direction
             );
-            player.drawDebug(context, this.stage);
+           if(gameState.debug.entities) player.drawDebug(context, this.stage);
         }
          // Draw bricks behind Mario
         this.drawEntities(context);

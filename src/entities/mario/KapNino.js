@@ -38,7 +38,7 @@ export class KapNino {
         // Each frame: [ [sx, sy, sw, sh], [ox, oy], { push: [x,y,w,h], hurt: [x,y,w,h] } ]
         this.frames = new Map([
              ['idle', [
-                [[10, 108, 22, 28], [11, 26], { push: [-10, -28, 20, 28], hurt: [-10, -28, 20, 26] }],
+                [[10, 108, 22, 28], [11, 26], { push: [-10, -18, 20, 18], hurt: [-10, -28, 20, 28] }],
             ]],           
              ['dead', [
                 [[46, 111, 31, 21], [15, 19], { push: [0, 0, 0, 0], hurt: [0, 0, 0, 0] }],

@@ -6,7 +6,7 @@ import { gameState } from '../../state/gameState.js';
 import { Bullet } from './entity/bullet.js';
 
 export class Mario {
-    constructor(game, playerId = 0) {
+    constructor(game, playerId = 0, x = 30, y = 200) {
         this.game = game;
         this.playerId = playerId;
         this.soundJump = document.querySelector('audio#sound-jump');
@@ -16,10 +16,15 @@ export class Mario {
         this.ground = 207;
 
         // Position offset for player2
-        this.position = { x: 2600 + playerId * 40, y: 200 };
+        this.position = { x: x + playerId * 40, y: y };
         this.direction = 1;
 
         this.powerType = null;
+
+        this.levelEndPhase = 0; // 0 = none, 1 = wait1, 2 = counting, 3 = wait2
+        this.levelEndTimer = 0;
+        this.timeConvertTimer = 0;
+        this.timeConvertedDone = false;
 
         this.walkEndAnim = false;
         this.removeMario = false; // flag to signal Mario removal after auto-walk finishes
@@ -29,6 +34,7 @@ export class Mario {
         this.pipeTimer = 0;
         this.changeStage = false;
         this.currentPipe = null;
+        this.timeConverted = false;
 
         this.visible = true;
 
@@ -89,18 +95,18 @@ export class Mario {
                 [[136, 4, 31, 44], [15, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]
             ]],
              ['idleGun', [
-                [[144, 432, 45, 44], [22, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]
+                [[144, 432, 45, 44], [22, 42], { push: [-12, -42, 18, 42], hurt: [-12, -42, 18, 42] }]
             ]],
             ['walkGun', [
-                [[144, 432, 45, 44], [22, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
-                [[92, 432, 44, 47], [22, 45], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
-                [[47, 430, 32, 50], [16, 48], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
-                [[0, 429, 37, 49], [18, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }]
+                [[144, 432, 45, 44], [22, 42], { push: [-12, -42, 18, 42], hurt: [-12, -42, 18, 42] }],
+                [[92, 432, 44, 47], [22, 45], { push: [-12, -42, 18, 42], hurt: [-12, -42, 18, 42] }],
+                [[47, 430, 32, 50], [16, 48], { push: [-12, -42, 18, 42], hurt: [-12, -42, 18, 42] }],
+                [[0, 429, 37, 49], [18, 47], { push: [-12, -42, 18, 42], hurt: [-12, -42, 18, 42] }]
             ]],
               ['GunShoot', [
-                [[144, 432, 45, 44], [22, 42], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
-                [[199, 427, 39, 53], [19, 51], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
-                [[243, 428, 43, 49], [22, 47], { push: [-2, -44, 12, 44], hurt: [-2, -44, 12, 44] }],
+                [[144, 432, 45, 44], [22, 42], { push: [-12, -42, 18, 42], hurt: [-12, -42, 18, 42] }],
+                [[199, 427, 39, 53], [19, 51], { push: [-12, -42, 18, 42], hurt: [-12, -42, 18, 42] }],
+                [[243, 428, 43, 49], [22, 47], { push: [-12, -42, 18, 42], hurt: [-12, -42, 18, 42] }],
                
             ]],
             ['getUp-1', [
@@ -192,6 +198,14 @@ export class Mario {
     }
 
     handleGunShootState(time) {
+         // Jump
+    if (control.isHeavyKick(this.playerId) && this.onGround) {
+        this.velocity.y = -this.jumpForce;
+        playSound(this.soundJump, 1);
+    } else  if (control.isHeavyPunch(this.playerId) && this.onGround) {
+        this.velocity.y = -this.jumpForce;
+        playSound(this.soundJump, 1);
+    }
        this.handleHorizontalCollisions();
     }
     
@@ -511,6 +525,52 @@ handleHorizontalCollisions() {
 
     // --- PHYSICS & UPDATE ---
    update(time) {
+  // 🎬 LEVEL END SEQUENCE
+if (this.levelEndPhase > 0) {
+    this.levelEndTimer += time.secondsPassed;
+
+    // ⏸ PHASE 1: wait 3 seconds
+    if (this.levelEndPhase === 1) {
+        if (this.levelEndTimer >= 3) {
+            this.levelEndPhase = 2;
+            this.levelEndTimer = 0;
+            console.log("Phase 2: counting time to score");
+        }
+        return;
+    }
+
+    // ⏱ PHASE 2: convert time → score
+    if (this.levelEndPhase === 2) {
+        this.timeConvertTimer += time.secondsPassed;
+
+        if (this.timeConvertTimer >= 0.05 && gameState.mario.time > 0) {
+            this.timeConvertTimer = 0;
+
+            gameState.mario.time--;
+            gameState.mario.score += 50;
+
+            playSound(document.querySelector('audio#sound-coin'), 0.3);
+        }
+
+        if (gameState.mario.time <= 0) {
+            this.levelEndPhase = 3;
+            this.levelEndTimer = 0;
+            console.log("Phase 3: final pause");
+        }
+
+        return;
+    }
+
+    // ⏸ PHASE 3: wait 3 seconds before scene change
+    if (this.levelEndPhase === 3) {
+        if (this.levelEndTimer >= 3) {
+            gameState.mario.lives = -1;
+            gameState.changeScene = true;
+            console.log("Changing scene now");
+        }
+        return;
+    }
+}
     // 🚨 FLAG AUTO WALK OVERRIDE
 if (this.autoWalk) {
     this.velocity.x = 0.5;
@@ -525,11 +585,19 @@ if (this.autoWalk) {
         );
         this.walkEndAnim = true;
     }
-    if (this.position.x >= 3263) {
-        this.position.x = 3263;
-        this.velocity.x = 0;
-        this.removeMario = true; // signal to remove Mario after reaching end
+
+   if (this.position.x >= 3263) {
+    this.position.x = 3263;
+    this.velocity.x = 0;
+
+    if (this.levelEndPhase === 0) {
+        this.removeMario = true; // Mario disappears
+        this.levelEndPhase = 1;  // start phase 1
+        this.levelEndTimer = 0;
+
+        console.log("Phase 1: pause before countdown");
     }
+}
     this.position.x += this.velocity.x;
 
 
@@ -540,7 +608,7 @@ if (this.autoWalk) {
     return; // 🚨 stop ALL normal logic
 }
 // AFTER position.x += velocity.x
-this.handleHorizontalCollisions();
+//this.handleHorizontalCollisions();
    if (this.enteringPipe) {
     this.pipeTimer++;
 
