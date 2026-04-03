@@ -16,6 +16,7 @@ import { gameState } from '../state/gameState.js';
 import { drawText } from '../utils/UIHandler.js';
 import { LevelTransition } from './levelTransition.js';
 
+
 export class MarioScene {
     constructor(game) {
         gameState.changeScene = false;
@@ -34,6 +35,8 @@ export class MarioScene {
         this.cameraLock = false;
         this.cameraLockDone = false;
         this.enemySpawn = false;
+        this.enemySpawn2 = false;
+        this.enemySpawn3 = false;
 
         this.hordeTimer = 0;
         this.hordeCount = 0;
@@ -76,7 +79,7 @@ export class MarioScene {
         ];
         } else {
             this.players = [
-            new Mario(this, 0, 2600),
+            new Mario(this, 0, 30),
         ];
         }
         
@@ -478,7 +481,12 @@ const isUnder =
 
 updateHorde(time) {
     this.hordeTimer += time.secondsPassed;
-
+    if(gameState.hordekillCount >= 15 && !this.enemySpawn3){
+        this.enemies.push(
+                new SelectaEnemy(this, 2875, 157, 2.5, -1),
+            );
+        this.enemySpawn3 = true;
+    }
     if (gameState.hordekillCount >= 25) {
         this.stageMusic.play();
         document.querySelector('audio#music-warning').pause();
@@ -606,8 +614,8 @@ updateHorde(time) {
     // Reset Mario
     this.mario.resetVelocities();
     this.mario.changeStage = false;
-    this.mario2.resetVelocities();
-    this.mario2.changeStage = false;
+   if(gameState.mario.players === 2) this.mario2.resetVelocities();
+     if(gameState.mario.players === 2) this.mario2.changeStage = false;
 }
  else if(gameState.stage === 'stage') {
     // Clear & push new stage
@@ -757,8 +765,8 @@ updateHorde(time) {
    
     this.mario.resetVelocities();
     this.mario.changeStage = false;
-    this.mario2.resetVelocities();
-    this.mario2.changeStage = false;
+      if(gameState.mario.players === 2) this.mario2.resetVelocities();
+     if(gameState.mario.players === 2) this.mario2.changeStage = false;
 }
         }
 

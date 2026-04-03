@@ -1,0 +1,89 @@
+// screenButtonControls.js
+import { Control, controls } from './control.js';
+import { FighterState } from './fighter.js';
+
+export function screenButtonControls() {
+    // Loop over each player's control scheme
+    controls.forEach((controlSet, playerId) => {
+        const { buttons } = controlSet;
+
+        Object.entries(buttons).forEach(([control, elementId]) => {
+            const buttonEl = document.getElementById(elementId);
+            if (!buttonEl) {
+                console.warn(`Missing button element with id="${elementId}"`);
+                return;
+            }
+
+            let isPressed = false;
+
+            const handlePress = () => {
+                if (isPressed) {
+                    console.log(`Button "${control}" already held for player ${playerId}, skipping`);
+                    return;
+                }
+                isPressed = true;
+                console.log(`Button "${control}" pressed by player ${playerId}`);
+
+                // Find fighter and change its state directly
+                const fighter = this.fighters[playerId];
+                if (!fighter) {
+                    console.warn(`No fighter found for player ${playerId}`);
+                    return;
+                }
+
+                console.log(`Changing fighter "${fighter.name}" state by control "${control}"`);
+
+                switch (control) {
+                    case Control.UP:
+                        fighter.changeState(FighterState.JUMP_UP);
+                        break;
+                    case Control.LEFT:
+                        fighter.changeState(FighterState.WALK_BACKWARD);
+                        break;
+                    case Control.RIGHT:
+                        fighter.changeState(FighterState.WALK_FORWARD);
+                        break;
+                    case Control.DOWN:
+                        fighter.changeState(FighterState.CROUCH_DOWN);
+                        break;
+                    default:
+                        console.warn(`Unhandled control: ${control}`);
+                }
+            };
+
+            const handleRelease = () => {
+                if (isPressed) {
+                    console.log(`Button "${control}" released by player ${playerId}`);
+                }
+                isPressed = false;
+            };
+
+            // Mouse events
+            buttonEl.addEventListener('mousedown', handlePress);
+            buttonEl.addEventListener('mouseup', handleRelease);
+            buttonEl.addEventListener('mouseleave', handleRelease);
+
+            // Touch events (for phones/tablets)
+            buttonEl.addEventListener('touchstart', handlePress);
+            buttonEl.addEventListener('touchend', handleRelease);
+            buttonEl.addEventListener('touchcancel', handleRelease);
+        });
+    });
+
+    // Other special buttons that change state directly (on click)
+    const extraButtons = [
+        { id: 'jFor', state: FighterState.JUMP_FORWARD },
+        { id: 'jBack', state: FighterState.JUMP_BACKWARD },
+        { id: 'idle', state: FighterState.IDLE },
+        { id: 'crouchUp', state: FighterState.CROUCH_UP },
+    ];
+
+    extraButtons.forEach(({ id, state }) => {
+        const btn = document.getElementById(id);
+        if (!btn) {
+            console.warn(`Missing extra button element with id="${id}"`);
+            return;
+        }
+
+    });
+}

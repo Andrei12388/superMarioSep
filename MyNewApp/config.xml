@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.andreibardoquillo.supermariosep2026" version="1.0.0"
+    xmlns="http://www.w3.org/ns/widgets"
+    xmlns:cdv="http://cordova.apache.org/ns/1.0">
+
+    <name>Super Mario Sep</name> 
+  
+    <description>Meme to Game by Robert Andrei Bardoquillo</description>
+    <author email="robertandreib.up@gmail.com" href="https://andrei12388.itch.io/super-mario-sep">
+        KapeCom
+    </author>
+
+    <content src="index.html" />
+
+    <!-- Plugins -->
+    <plugin name="cordova-plugin-fullscreen" spec="^1.2.0" />
+    <plugin name="cordova-plugin-screen-orientation" spec="^3.0.2" />
+    <plugin name="cordova-plugin-media" spec="^6.0.0" />
+    <plugin name="cordova-plugin-splashscreen" spec="^6.0.0" />
+
+    <!-- Preferences -->
+    <preference name="Fullscreen" value="true" />
+    <preference name="AndroidHardwareAcceleration" value="true" />
+    <preference name="AndroidWebViewSettings" value="mediaPlaybackRequiresUserGesture=false" />
+    <preference name="SplashScreen" value="screen" />
+    <preference name="SplashScreenDelay" value="3000" />
+    <preference name="Orientation" value="landscape" />
+
+    <!-- Access / Links -->
+    <access origin="*" />
+    <allow-intent href="http://*/*" />
+    <allow-intent href="https://*/*" />
+    <allow-intent href="market:*" />
+
+    <!-- Android platform -->
+    <platform name="android">
+        <icon src="res/android/mipmap-mdpi/ic_launcher.png" density="mdpi" />
+        <icon src="res/android/mipmap-hdpi/ic_launcher.png" density="hdpi" />
+        <icon src="res/android/mipmap-xhdpi/ic_launcher.png" density="xhdpi" />
+        <icon src="res/android/mipmap-xxhdpi/ic_launcher.png" density="xxhdpi" />
+        <icon src="res/android/mipmap-xxxhdpi/ic_launcher.png" density="xxxhdpi" />
+    </platform>
+
+</widget>

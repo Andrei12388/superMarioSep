@@ -2,9 +2,9 @@ import * as control from '../inputHandler.js';
 import { playSound } from '../soundHandler.js';
 import { gameState } from '../state/gameState.js';
 import { MarioScene } from './MarioScene.js';
-import { CharacterSelect } from './CharacterSelect.js';
 import { drawText } from '../utils/UIHandler.js';
 import { LevelTransition } from './levelTransition.js';
+
 
 export class MainMenu {
     constructor(game) {
@@ -39,7 +39,13 @@ export class MainMenu {
     }
 
     update(time) {
+        
         // Handle input for selection
+        if (control.isSelect(0,1)) {
+            gameState.explicitMode = !gameState.explicitMode;
+            control.showNotice(`⚠️Explicit mode ${gameState.explicitMode ? 'enabled ✅' : 'disabled ❌'}`);
+            playSound(this.soundJump, 1)
+        }
         if (control.isUp(0,1) && this.selection > 0) {
             this.selection--;
             playSound(this.soundJump, 1)
